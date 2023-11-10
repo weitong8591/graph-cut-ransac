@@ -150,7 +150,25 @@ namespace gcransac
 				processing_queue.emplace(std::make_pair(updated_inlier_ratio, sample_idx));
 			}
 		}
-
+		
+		void printQueue(std::priority_queue<
+		std::pair<double, size_t>, 
+		std::vector<std::pair<double, size_t>>> processing_queue)
+		{
+			std::ofstream fileIndices("indices.txt", std::fstream::app);
+			std::ofstream fileProbs("probs.txt", std::fstream::app);
+		while (!processing_queue.empty())
+		{
+			const auto &e = processing_queue.top();
+			fileProbs << e.first << " ";
+			fileIndices << e.second << " ";
+			processing_queue.pop();
+		}
+		fileProbs << "\n";
+		fileIndices << "\n";
+		fileIndices.close();
+		fileProbs.close();
+		}
 		OLGA_INLINE bool AdaptiveReorderingSampler::sample(
 			const std::vector<size_t>& pool_,
 			size_t* const subset_,

@@ -544,12 +544,17 @@ namespace gcransac
 					gcransac.settings.neighborhood_sphere_radius = 8; // The radius of the neighborhood ball
 
 					sampler::UniformSampler sampler(&data_); // The local optimization sampler is used inside the local optimization
-
+					std::vector<double> weights;
+					for (int i=0; i<51; i++)
+					{
+						weights.push_back(1.0);
+					}
 					gcransac.run(data_, // All data points
 						estimator, // The fundamental matrix estimator
 						&sampler, // The main sampler 
 						&sampler, // The sampler for local optimization
 						nullptr, // There is no neighborhood graph now  
+						weights,
 						model); // The estimated model parameters
 					
 					// The statistics of the inner GC-RANSAC

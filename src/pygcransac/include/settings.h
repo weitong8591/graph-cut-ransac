@@ -45,7 +45,9 @@ namespace gcransac
 			bool do_final_iterated_least_squares, // Flag to decide a final iterated least-squares fitting is needed to polish the output model parameters.
 				do_local_optimization, // Flag to decide if local optimization is needed
 				do_graph_cut, // Flag to decide of graph-cut is used in the local optimization
-				use_inlier_limit; // Flag to decide if an inlier limit is used in the local optimization to speed up the procedure
+				use_inlier_limit,
+				his_use,
+				new_local; // Flag to decide if an inlier limit is used in the local optimization to speed up the procedure
 
 			double desired_fps; // The desired FPS
 
@@ -61,7 +63,10 @@ namespace gcransac
 			double confidence, // Required confidence in the result
 				neighborhood_sphere_radius, // The radius of the ball used for creating the neighborhood graph
 				threshold, // The inlier-outlier threshold
-				spatial_coherence_weight; // The weight of the spatial coherence term
+				spatial_coherence_weight, // The weight of the spatial coherence term
+				his_max;
+			
+			int his_size;
 
 			Settings() :
 				do_final_iterated_least_squares(true),
@@ -80,7 +85,12 @@ namespace gcransac
 				core_number(1),
 				spatial_coherence_weight(0.14),
 				threshold(2.0),
-				confidence(0.95)
+				confidence(0.95),
+				his_max(10.),
+				his_size(200),
+				his_use(false),
+				new_local(false)
+
 			{
 
 			}

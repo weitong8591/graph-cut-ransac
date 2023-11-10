@@ -796,20 +796,25 @@ void test2DLineFitting(
 
 	GCRANSAC<utils::Default2DLineEstimator,
 		neighborhood::GridNeighborhoodGraph<2>,
-		MSACScoringFunction<utils::Default2DLineEstimator>,
+		HistogramScoringFunction<utils::Default2DLineEstimator>,
 		preemption::SPRTPreemptiveVerfication<utils::Default2DLineEstimator>> gcransac;
 	gcransac.settings.threshold = inlier_outlier_threshold_; // The inlier-outlier threshold
 	gcransac.settings.spatial_coherence_weight = spatial_coherence_weight_; // The weight of the spatial coherence term
 	gcransac.settings.confidence = confidence_; // The required confidence in the results
 	gcransac.settings.max_iteration_number = 5000; // The maximum number of iterations
 	gcransac.settings.min_iteration_number = 20; // The minimum number of iterations
-
+	std::vector<double> his_weights;
+	for (int i=0; i<51; i++)
+	{
+		his_weights.push_back(1.0);
+	}
 	// Start GC-RANSAC
 	gcransac.run(points, // The normalized points
 		estimator,  // The estimator
 		&main_sampler, // The sample used for selecting minimal samples in the main iteration
 		&local_optimization_sampler, // The sampler used for selecting a minimal sample when doing the local optimization
 		&neighborhood, // The neighborhood-graph
+		his_weights,
 		model, // The obtained model parameters
 		preemptive_verification,
 		inlier_selector);
@@ -914,7 +919,7 @@ void testRigidTransformFitting(
 
 	GCRANSAC<utils::DefaultRigidTransformationEstimator,
 		neighborhood::FlannNeighborhoodGraph,
-		MSACScoringFunction<utils::DefaultRigidTransformationEstimator>,
+		HistogramScoringFunction<utils::DefaultRigidTransformationEstimator>,
 		preemption::EmptyPreemptiveVerfication<utils::DefaultRigidTransformationEstimator>> gcransac;
 	gcransac.settings.threshold = inlier_outlier_threshold_; // The inlier-outlier threshold
 	gcransac.settings.spatial_coherence_weight = spatial_coherence_weight_; // The weight of the spatial coherence term
@@ -922,13 +927,18 @@ void testRigidTransformFitting(
 	gcransac.settings.max_iteration_number = 5000; // The maximum number of iterations
 	gcransac.settings.min_iteration_number = 50; // The minimum number of iterations
 	gcransac.settings.neighborhood_sphere_radius = sphere_radius_; // The radius of the neighborhood ball
-
+	std::vector<double> his_weights;
+	for (int i=0; i<51; i++)
+	{
+		his_weights.push_back(1.0);
+	}
 	// Start GC-RANSAC
 	gcransac.run(points, // The normalized points
 		estimator,  // The estimator
 		&main_sampler, // The sample used for selecting minimal samples in the main iteration
 		&local_optimization_sampler, // The sampler used for selecting a minimal sample when doing the local optimization
 		&neighborhood, // The neighborhood-graph
+		his_weights,
 		model, // The obtained model parameters
 		preemptive_verification,
 		inlier_selector);
@@ -1045,7 +1055,7 @@ void testHomographyFitting(
 
 	GCRANSAC<utils::DefaultHomographyEstimator,
 		neighborhood::GridNeighborhoodGraph<4>,
-		MSACScoringFunction<utils::DefaultHomographyEstimator>,
+		HistogramScoringFunction<utils::DefaultHomographyEstimator>,
 		preemption::EmptyPreemptiveVerfication<utils::DefaultHomographyEstimator>,
 		inlier_selector::SpacePartitioningRANSAC<utils::DefaultHomographyEstimator, neighborhood::GridNeighborhoodGraph<4>>> gcransac;
 	gcransac.setFPS(fps_); // Set the desired FPS (-1 means no limit)
@@ -1079,13 +1089,18 @@ void testHomographyFitting(
 		fprintf(stderr, "One of the samplers is not initialized successfully.\n");
 		return;
 	}
-
+	std::vector<double> his_weights;
+	for (int i=0; i<51; i++)
+	{
+		his_weights.push_back(1.0);
+	}
 	// Start GC-RANSAC
 	gcransac.run(points,
 		estimator,
 		&main_sampler,
 		&local_optimization_sampler,
 		&neighborhood,
+		his_weights,
 		model,
 		preemptive_verification,
 		inlier_selector);
@@ -1225,7 +1240,7 @@ void testFundamentalMatrixFitting(
 
 	GCRANSAC<utils::DefaultFundamentalMatrixEstimator,
 		neighborhood::GridNeighborhoodGraph<4>,
-		MSACScoringFunction<utils::DefaultFundamentalMatrixEstimator>,
+		HistogramScoringFunction<utils::DefaultFundamentalMatrixEstimator>,
 		preemption::SPRTPreemptiveVerfication<utils::DefaultFundamentalMatrixEstimator>> gcransac;
 	gcransac.settings.threshold = inlier_outlier_threshold_ * max_image_diagonal; // The inlier-outlier threshold
 	gcransac.settings.spatial_coherence_weight = spatial_coherence_weight_; // The weight of the spatial coherence term
@@ -1238,13 +1253,18 @@ void testFundamentalMatrixFitting(
 	// Printinf the actually used threshold
 	printf("Used threshold is %.2f pixels (%.2f%% of the image diagonal)\n",
 		gcransac.settings.threshold, 100.0 * inlier_outlier_threshold_);
-
+	std::vector<double> his_weights;
+	for (int i=0; i<51; i++)
+	{
+		his_weights.push_back(1.0);
+	}
 	// Start GC-RANSAC
 	gcransac.run(points,
 		estimator,
 		&main_sampler,
 		&local_optimization_sampler,
 		&neighborhood,
+		his_weights,
 		model,
 		preemptive_verification,
 		inlier_selector);
@@ -1389,7 +1409,7 @@ void test6DPoseFitting(
 
 	GCRANSAC<utils::DefaultPnPEstimator,
 		neighborhood::FlannNeighborhoodGraph,
-		MSACScoringFunction<utils::DefaultPnPEstimator>,
+		HistogramScoringFunction<utils::DefaultPnPEstimator>,
 		preemption::SPRTPreemptiveVerfication<utils::DefaultPnPEstimator>> gcransac;
 	gcransac.settings.threshold = normalized_threshold; // The inlier-outlier threshold
 	gcransac.settings.spatial_coherence_weight = spatial_coherence_weight_; // The weight of the spatial coherence term
@@ -1397,13 +1417,18 @@ void test6DPoseFitting(
 	gcransac.settings.max_iteration_number = 5000; // The maximum number of iterations
 	gcransac.settings.min_iteration_number = 20; // The minimum number of iterations
 	gcransac.settings.neighborhood_sphere_radius = sphere_radius_; // The radius of the neighborhood ball
-
+	std::vector<double> his_weights;
+	for (int i=0; i<51; i++)
+	{
+		his_weights.push_back(1.0);
+	}
 	// Start GC-RANSAC
 	gcransac.run(normalized_points, // The normalized points
 		estimator,  // The estimator
 		&main_sampler, // The sample used for selecting minimal samples in the main iteration
 		&local_optimization_sampler, // The sampler used for selecting a minimal sample when doing the local optimization
 		&neighborhood, // The neighborhood-graph
+		his_weights,
 		model, // The obtained model parameters
 		preemptive_verification,
 		inlier_selector);
@@ -1627,7 +1652,7 @@ void testEssentialMatrixFitting(
 
 	GCRANSAC<utils::DefaultEssentialMatrixEstimator,
 		neighborhood::GridNeighborhoodGraph<4>,
-		MSACScoringFunction<utils::DefaultEssentialMatrixEstimator>,
+		HistogramScoringFunction<utils::DefaultEssentialMatrixEstimator>,
 		preemption::SPRTPreemptiveVerfication<utils::DefaultEssentialMatrixEstimator>> gcransac;
 	gcransac.setFPS(fps_); // Set the desired FPS (-1 means no limit)
 	gcransac.settings.threshold = normalized_threshold; // The inlier-outlier threshold
@@ -1638,13 +1663,18 @@ void testEssentialMatrixFitting(
 	gcransac.settings.min_iteration_number = 50; // The minimum number of iterations
 	gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
 	gcransac.settings.core_number = std::thread::hardware_concurrency(); // The number of parallel processes
-
+	std::vector<double> his_weights;
+	for (int i=0; i<51; i++)
+	{
+		his_weights.push_back(1.0);
+	}
 	// Start GC-RANSAC
 	gcransac.run(normalized_points,
 		estimator,
 		&main_sampler,
 		&local_optimization_sampler,
 		&neighborhood,
+		his_weights,
 		model,
 		preemptive_verification,
 		inlier_selector);

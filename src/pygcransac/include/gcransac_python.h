@@ -11,6 +11,9 @@ int findRigidTransform_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &pose, 
+	std::vector<double> &his_weights, 
+	double his_max,
+	int his_size, bool his_use,
 	// The spatial coherence weight used in the local optimization
 	double spatial_coherence_weight, 
 	// The inlier-outlier threshold
@@ -57,6 +60,9 @@ int find6DPose_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &pose, 
+	std::vector<double> &his_weights, 
+	double his_max,
+	int his_size, bool his_use,
 	// The spatial coherence weight used in the local optimization
 	double spatial_coherence_weight, 
 	// The inlier-outlier threshold
@@ -99,6 +105,9 @@ int find6DPose_(
 	std::vector<bool>& inliers, 
 	// Output: the found 2d line
 	std::vector<double> &line, 
+	std::vector<double> &his_weights,
+	double his_max,
+	int his_size, bool his_use,
 	// The image size
 	int w, int h,
 	// The spatial coherence weight used in the local optimization
@@ -144,6 +153,9 @@ int findFundamentalMatrix_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &fundamental_matrix, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use,
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -181,7 +193,9 @@ int findFundamentalMatrix_(
 	// The variance parameter of the AR-Sampler. It is only used if that particular sampler is selected.
 	double sampler_variance,
 	// The number of RANSAC iterations done in the local optimization
-	int lo_number);
+	int lo_number,
+	bool final_fit, 
+	bool new_local);
 
 // A method for estimating a fundamental matrix given 2D-2D correspondences
 int findFundamentalMatrixAC_(
@@ -193,6 +207,9 @@ int findFundamentalMatrixAC_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &fundamental_matrix, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use,
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -241,7 +258,10 @@ int findFundamentalMatrixSIFT_(
 	// Output: the found inliers 
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
-	std::vector<double> &fundamental_matrix, 
+	std::vector<double> &fundamental_matrix,
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use, 
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -295,6 +315,9 @@ int findEssentialMatrix_(
 	std::vector<double> &source_intrinsics, 
 	// The intrinsic camera matrix of the destination image
 	std::vector<double> &destination_intrinsics, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use,
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -332,7 +355,12 @@ int findEssentialMatrix_(
 	// The variance parameter of the AR-Sampler. It is only used if that particular sampler is selected.
 	double sampler_variance,
 	// The number of RANSAC iterations done in the local optimization
-	int lo_number);
+	int lo_number,
+	bool final_fit,
+	bool new_local
+	
+	
+	);
 
 // A method for estimating an essential matrix given 2D-2D correspondences
 int findEssentialMatrixAC_(
@@ -348,6 +376,9 @@ int findEssentialMatrixAC_(
 	std::vector<double> &source_intrinsics, 
 	// The intrinsic camera matrix of the destination image
 	std::vector<double> &destination_intrinsics, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use,
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -401,6 +432,9 @@ int findEssentialMatrixSIFT_(
 	std::vector<double> &source_intrinsics, 
 	// The intrinsic camera matrix of the destination image
 	std::vector<double> &destination_intrinsics, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use,
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -458,6 +492,9 @@ int findGravityEssentialMatrix_(
 	std::vector<double> &source_intrinsics, 
 	// The intrinsic camera matrix of the destination image
 	std::vector<double> &destination_intrinsics, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use,
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -509,6 +546,9 @@ int findPlanarEssentialMatrix_(
 	std::vector<double> &source_intrinsics, 
 	// The intrinsic camera matrix of the destination image
 	std::vector<double> &destination_intrinsics, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use,
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -556,6 +596,9 @@ int findHomography_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &homography, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use,
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -609,6 +652,9 @@ int findHomographyAC_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &homography, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use,
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -658,6 +704,9 @@ int findHomographySIFT_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &homography, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use,
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization

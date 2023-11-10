@@ -314,7 +314,6 @@ namespace gcransac
 			{
 				if (sample_number_ < nonMinimalSampleSize())
 					return false;
-
 				// The eight point fundamental matrix fitting algorithm
 				if (!non_minimal_solver->estimateModel(data_,
 					sample_,

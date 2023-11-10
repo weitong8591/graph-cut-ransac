@@ -91,7 +91,7 @@ namespace gcransac
 		public:
 			double additional_model_probability;
 
-			static constexpr bool providesScore() { return true; }
+			static constexpr bool providesScore() { return false; }
 			static constexpr const char *getName() { return "SPRT"; }
 
 			~SPRTPreemptiveVerfication() {

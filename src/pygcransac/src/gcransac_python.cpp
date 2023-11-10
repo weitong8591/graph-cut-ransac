@@ -47,6 +47,9 @@ int findLine2D_(
 	std::vector<bool>& inliers, 
 	// Output: the found 2d line
 	std::vector<double> &line, 
+	std::vector<double> &his_weights,
+	double his_max,
+	int his_size, bool his_use,
 	// The image size
 	int w, int h,
 	// The spatial coherence weight used in the local optimization
@@ -203,7 +206,7 @@ int findLine2D_(
 
 		GCRANSAC<utils::Default2DLineEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::Default2DLineEstimator>,
+			HistogramScoringFunction<utils::Default2DLineEstimator>,
 			preemption::SPRTPreemptiveVerfication<utils::Default2DLineEstimator>> gcransac;
 		gcransac.settings.threshold = threshold; // The inlier-outlier threshold
 		gcransac.settings.spatial_coherence_weight = spatial_coherence_weight; // The weight of the spatial coherence term
@@ -212,13 +215,16 @@ int findLine2D_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(point_matrix,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
@@ -235,13 +241,16 @@ int findLine2D_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(point_matrix,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model);
 
 		statistics = gcransac.getRansacStatistics();
@@ -287,6 +296,9 @@ int find6DPose_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &pose, 
+	std::vector<double> &his_weights, 
+	double his_max,
+	int his_size, bool his_use,
 	// The spatial coherence weight used in the local optimization
 	double spatial_coherence_weight, 
 	// The inlier-outlier threshold
@@ -434,7 +446,7 @@ int find6DPose_(
 
 		GCRANSAC<utils::DefaultPnPEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::DefaultPnPEstimator>,
+			HistogramScoringFunction<utils::DefaultPnPEstimator>,
 			preemption::SPRTPreemptiveVerfication<utils::DefaultPnPEstimator>> gcransac;
 		gcransac.settings.threshold = threshold; // The inlier-outlier threshold
 		gcransac.settings.spatial_coherence_weight = spatial_coherence_weight; // The weight of the spatial coherence term
@@ -443,13 +455,16 @@ int find6DPose_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = 8; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
@@ -467,13 +482,16 @@ int find6DPose_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = 8; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model);
 
 		statistics = gcransac.getRansacStatistics();
@@ -521,6 +539,9 @@ int findRigidTransform_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &pose, 
+	std::vector<double> &his_weights, 
+	double his_max,
+	int his_size, bool his_use,
 	// The spatial coherence weight used in the local optimization
 	double spatial_coherence_weight, 
 	// The inlier-outlier threshold
@@ -719,7 +740,7 @@ int findRigidTransform_(
 
 		GCRANSAC<utils::DefaultRigidTransformationEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::DefaultRigidTransformationEstimator>,
+			HistogramScoringFunction<utils::DefaultRigidTransformationEstimator>,
 			preemption::SPRTPreemptiveVerfication<utils::DefaultRigidTransformationEstimator>> gcransac;
 		gcransac.settings.threshold = threshold; // The inlier-outlier threshold
 		gcransac.settings.spatial_coherence_weight = spatial_coherence_weight; // The weight of the spatial coherence term
@@ -727,13 +748,16 @@ int findRigidTransform_(
 		gcransac.settings.max_local_optimization_number = lo_number; // The maximum number of local optimizations
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
@@ -753,7 +777,7 @@ int findRigidTransform_(
 
 			GCRANSAC<utils::DefaultRigidTransformationEstimator,
 				AbstractNeighborhood,
-				MSACScoringFunction<utils::DefaultRigidTransformationEstimator>,
+				HistogramScoringFunction<utils::DefaultRigidTransformationEstimator>,
 				preemption::EmptyPreemptiveVerfication<utils::DefaultRigidTransformationEstimator>,
 				inlier_selector::SpacePartitioningRANSAC<utils::DefaultRigidTransformationEstimator, AbstractNeighborhood>> gcransac;
 			gcransac.settings.threshold = threshold; // The inlier-outlier threshold
@@ -762,13 +786,16 @@ int findRigidTransform_(
 			gcransac.settings.max_local_optimization_number = lo_number; // The maximum number of local optimizations
 			gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 			gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
-
+			gcransac.settings.his_max = his_max;
+			gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 			// Start GC-RANSAC
 			gcransac.run(points,
 				estimator,
 				main_sampler.get(),
 				&local_optimization_sampler,
 				neighborhood_graph.get(),
+				his_weights,
 				model,
 				preemptive_verification,
 				inlier_selector);
@@ -782,7 +809,7 @@ int findRigidTransform_(
 
 			GCRANSAC<utils::DefaultRigidTransformationEstimator,
 				AbstractNeighborhood,
-				MSACScoringFunction<utils::DefaultRigidTransformationEstimator>,
+				HistogramScoringFunction<utils::DefaultRigidTransformationEstimator>,
 				preemption::EmptyPreemptiveVerfication<utils::DefaultRigidTransformationEstimator>,
 				inlier_selector::EmptyInlierSelector<utils::DefaultRigidTransformationEstimator, AbstractNeighborhood>> gcransac;
 			gcransac.settings.threshold = threshold; // The inlier-outlier threshold
@@ -791,13 +818,15 @@ int findRigidTransform_(
 			gcransac.settings.max_local_optimization_number = lo_number; // The maximum number of local optimizations
 			gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 			gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
-				
+			gcransac.settings.his_max = his_max;
+			gcransac.settings.his_size = his_size;	
 			// Start GC-RANSAC
 			gcransac.run(points,
 				estimator,
 				main_sampler.get(),
 				&local_optimization_sampler,
 				neighborhood_graph.get(),
+				his_weights,
 				model,
 				preemptive_verification,
 				inlier_selector);
@@ -848,6 +877,9 @@ int findFundamentalMatrix_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &fundamental_matrix, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use, 
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -885,7 +917,9 @@ int findFundamentalMatrix_(
 	// The variance parameter of the AR-Sampler. It is only used if that particular sampler is selected.
 	double sampler_variance,
 	// The number of RANSAC iterations done in the local optimization
-	int lo_number)
+	int lo_number,
+	bool do_final_iterated_least_squares,
+	bool new_local)
 {
 	int num_tents = correspondences.size() / 4;
 	cv::Mat points(num_tents, 4, CV_64F, &correspondences[0]);
@@ -1027,7 +1061,7 @@ int findFundamentalMatrix_(
 
 		GCRANSAC<utils::DefaultFundamentalMatrixEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::DefaultFundamentalMatrixEstimator>,
+			HistogramScoringFunction<utils::DefaultFundamentalMatrixEstimator>,
 			preemption::SPRTPreemptiveVerfication<utils::DefaultFundamentalMatrixEstimator>> gcransac;
 		gcransac.settings.threshold = threshold; // The inlier-outlier threshold
 		gcransac.settings.spatial_coherence_weight = spatial_coherence_weight; // The weight of the spatial coherence term
@@ -1036,6 +1070,11 @@ int findFundamentalMatrix_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = 8; // The radius of the neighborhood ball
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
+		gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
+		gcransac.settings.new_local = new_local;
 
 		// Start GC-RANSAC
 		gcransac.run(points,
@@ -1043,6 +1082,7 @@ int findFundamentalMatrix_(
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
@@ -1059,13 +1099,16 @@ int findFundamentalMatrix_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = 8; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model);
 
 		statistics = gcransac.getRansacStatistics();
@@ -1101,7 +1144,7 @@ int findFundamentalMatrix_(
 			&weights[0]);
 			
 		// Scoring function
-		MSACScoringFunction<utils::DefaultFundamentalMatrixEstimator> scoring;
+		HistogramScoringFunction<utils::DefaultFundamentalMatrixEstimator> scoring;
 		scoring.initialize(squared_truncated_threshold, points.rows);
 		// Score of the new model
 		Score score;
@@ -1116,7 +1159,11 @@ int findFundamentalMatrix_(
 				tmp_model, // The current model parameters
 				estimator, // The estimator 
 				squared_truncated_threshold, // The current threshold
-				current_inliers); // The current inlier set
+				current_inliers,
+				his_weights,
+				his_max,
+				his_size,
+				his_use); // The current inlier set
 
 			// Check if the updated model is better than the best so far
 			if (statistics.score < score.value)
@@ -1172,6 +1219,9 @@ int findFundamentalMatrixAC_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &fundamental_matrix, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use, 
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -1338,7 +1388,7 @@ int findFundamentalMatrixAC_(
 
 		GCRANSAC<utils::ACBasedFundamentalMatrixEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::ACBasedFundamentalMatrixEstimator>,
+			HistogramScoringFunction<utils::ACBasedFundamentalMatrixEstimator>,
 			preemption::SPRTPreemptiveVerfication<utils::ACBasedFundamentalMatrixEstimator>> gcransac;
 		gcransac.settings.threshold = threshold; // The inlier-outlier threshold
 		gcransac.settings.spatial_coherence_weight = spatial_coherence_weight; // The weight of the spatial coherence term
@@ -1347,13 +1397,16 @@ int findFundamentalMatrixAC_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = 8; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
@@ -1370,13 +1423,16 @@ int findFundamentalMatrixAC_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = 8; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model);
 
 		statistics = gcransac.getRansacStatistics();
@@ -1398,7 +1454,7 @@ int findFundamentalMatrixAC_(
 		// The squared least-squares threshold
 		const double squared_truncated_threshold = truncated_threshold * truncated_threshold; 
 		// Scoring function
-		MSACScoringFunction<utils::ACBasedFundamentalMatrixEstimator> scoring;
+		HistogramScoringFunction<utils::ACBasedFundamentalMatrixEstimator> scoring;
 		scoring.initialize(squared_truncated_threshold, points.rows);
 		// Score of the new model
 		Score score;
@@ -1413,7 +1469,10 @@ int findFundamentalMatrixAC_(
 				tmp_model, // The current model parameters
 				estimator, // The estimator 
 				squared_truncated_threshold, // The current threshold
-				inliers); // The current inlier set
+				inliers,
+				his_weights,
+				his_max,
+				his_size, his_use); // The current inlier set
 
 			// Check if the updated model is better than the best so far
 			if (statistics.score < score.value)
@@ -1470,6 +1529,9 @@ int findFundamentalMatrixSIFT_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &fundamental_matrix, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use, 
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -1636,7 +1698,7 @@ int findFundamentalMatrixSIFT_(
 
 		GCRANSAC<utils::SIFTBasedFundamentalMatrixEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::SIFTBasedFundamentalMatrixEstimator>,
+			HistogramScoringFunction<utils::SIFTBasedFundamentalMatrixEstimator>,
 			preemption::SPRTPreemptiveVerfication<utils::SIFTBasedFundamentalMatrixEstimator>> gcransac;
 		gcransac.settings.threshold = threshold; // The inlier-outlier threshold
 		gcransac.settings.spatial_coherence_weight = spatial_coherence_weight; // The weight of the spatial coherence term
@@ -1645,13 +1707,16 @@ int findFundamentalMatrixSIFT_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = 8; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
@@ -1668,13 +1733,16 @@ int findFundamentalMatrixSIFT_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = 8; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model);
 
 		statistics = gcransac.getRansacStatistics();
@@ -1696,7 +1764,7 @@ int findFundamentalMatrixSIFT_(
 		// The squared least-squares threshold
 		const double squared_truncated_threshold = truncated_threshold * truncated_threshold; 
 		// Scoring function
-		MSACScoringFunction<utils::SIFTBasedFundamentalMatrixEstimator> scoring;
+		HistogramScoringFunction<utils::SIFTBasedFundamentalMatrixEstimator> scoring;
 		scoring.initialize(squared_truncated_threshold, points.rows);
 		// Score of the new model
 		Score score;
@@ -1711,7 +1779,10 @@ int findFundamentalMatrixSIFT_(
 				tmp_model, // The current model parameters
 				estimator, // The estimator 
 				squared_truncated_threshold, // The current threshold
-				tmp_inliers); // The current inlier set
+				tmp_inliers,
+				his_weights,
+				his_max,
+				his_size, his_use); // The current inlier set
 
 			// Check if the updated model is better than the best so far
 			if (statistics.score < score.value)
@@ -1770,7 +1841,10 @@ int findEssentialMatrix_(
 	// The intrinsic camera matrix of the source image
 	std::vector<double> &source_intrinsics, 
 	// The intrinsic camera matrix of the destination image
-	std::vector<double> &destination_intrinsics, 
+	std::vector<double> &destination_intrinsics,
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use, 
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -1808,7 +1882,10 @@ int findEssentialMatrix_(
 	// The variance parameter of the AR-Sampler. It is only used if that particular sampler is selected.
 	double sampler_variance,
 	// The number of RANSAC iterations done in the local optimization
-	int lo_number)
+	int lo_number,
+	bool do_final_iterated_least_squares,
+	bool new_local
+	)
 {
 	int num_tents = correspondences.size() / 4;
 	cv::Mat points(num_tents, 4, CV_64F, &correspondences[0]);
@@ -1869,11 +1946,11 @@ int findEssentialMatrix_(
 	const double threshold_normalizer =
 		0.25 * (intrinsics_src(0,0) + intrinsics_src(1,1) + intrinsics_dst(0,0) + intrinsics_dst(1,1));
 
-	cv::Mat normalized_points(points.size(), CV_64F);
-	utils::normalizeCorrespondences(points,
-		intrinsics_src,
-		intrinsics_dst,
-		normalized_points);
+	// cv::Mat normalized_points(points.size(), CV_64F);
+	// utils::normalizeCorrespondences(points,
+	// 	intrinsics_src,
+	// 	intrinsics_dst,
+	// 	normalized_points);
 
 	// Apply Graph-cut RANSAC
 	utils::DefaultEssentialMatrixEstimator estimator(intrinsics_src,
@@ -1960,7 +2037,7 @@ int findEssentialMatrix_(
 
 		GCRANSAC<utils::DefaultEssentialMatrixEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::DefaultEssentialMatrixEstimator>,
+			HistogramScoringFunction<utils::DefaultEssentialMatrixEstimator>,
 			preemption::SPRTPreemptiveVerfication<utils::DefaultEssentialMatrixEstimator>> gcransac;
 		gcransac.settings.threshold = threshold / threshold_normalizer; // The inlier-outlier threshold
 		gcransac.settings.spatial_coherence_weight = spatial_coherence_weight; // The weight of the spatial coherence term
@@ -1969,13 +2046,19 @@ int findEssentialMatrix_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
+		gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
+		gcransac.settings.new_local = new_local;
 
 		// Start GC-RANSAC
-		gcransac.run(normalized_points,
+		gcransac.run(points,//normalized_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
@@ -1993,13 +2076,16 @@ int findEssentialMatrix_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(normalized_points,
+		gcransac.run(points,//normalized_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model);
 
 		statistics = gcransac.getRansacStatistics();
@@ -2022,21 +2108,23 @@ int findEssentialMatrix_(
 		{
 			const size_t point_idx = statistics.inliers[inlier_idx];
 			weights[inlier_idx] = 
-				MAX(0, 1.0 - estimator.squaredResidual(normalized_points.row(point_idx), model) / squared_truncated_threshold);
+				MAX(0, 1.0 - estimator.squaredResidual(
+					//normalized_points
+					points.row(point_idx), model) / squared_truncated_threshold);
 		}
 
 		std::vector<gcransac::Model> models;
 		estimator::solver::EssentialMatrixBundleAdjustmentSolver bundleOptimizer;
 		bundleOptimizer.estimateModel(
-			normalized_points,
+			points,//normalized_points,
 			&statistics.inliers[0],
 			statistics.inliers.size(),
 			models,
 			&weights[0]);
 			
 		// Scoring function
-		MSACScoringFunction<utils::DefaultEssentialMatrixEstimator> scoring;
-		scoring.initialize(squared_truncated_threshold, normalized_points.rows);
+		HistogramScoringFunction<utils::DefaultEssentialMatrixEstimator> scoring;
+		scoring.initialize(squared_truncated_threshold, points.rows);
 		// Score of the new model
 		Score score;
 		// Inliers of the new model
@@ -2046,11 +2134,14 @@ int findEssentialMatrix_(
 		for (auto &tmp_model : models)
 		{			
 			current_inliers.clear();
-			score = scoring.getScore(normalized_points, // All points
+			score = scoring.getScore(points,//normalized_points, // All points
 				tmp_model, // The current model parameters
 				estimator, // The estimator 
 				squared_truncated_threshold, // The current threshold
-				current_inliers); // The current inlier set
+				current_inliers,
+				his_weights,
+				his_max,
+				his_size, his_use); // The current inlier set
 
 			// Check if the updated model is better than the best so far
 			if (statistics.score < score.value)
@@ -2110,6 +2201,9 @@ int findEssentialMatrixAC_(
 	std::vector<double> &source_intrinsics, 
 	// The intrinsic camera matrix of the destination image
 	std::vector<double> &destination_intrinsics, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use, 
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -2210,11 +2304,11 @@ int findEssentialMatrixAC_(
 	const double threshold_normalizer =
 		0.25 * (intrinsics_src(0,0) + intrinsics_src(1,1) + intrinsics_dst(0,0) + intrinsics_dst(1,1));
 
-	cv::Mat normalized_points(points.size(), CV_64F);
-	utils::normalizeCorrespondences(points,
-		intrinsics_src,
-		intrinsics_dst,
-		normalized_points);
+	// cv::Mat normalized_points(points.size(), CV_64F);
+	// utils::normalizeCorrespondences(points,
+	// 	intrinsics_src,
+	// 	intrinsics_dst,
+	// 	normalized_points);
 
 	// Apply Graph-cut RANSAC
 	utils::ACBasedEssentialMatrixEstimator estimator(intrinsics_src,
@@ -2301,7 +2395,7 @@ int findEssentialMatrixAC_(
 
 		GCRANSAC<utils::ACBasedEssentialMatrixEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::ACBasedEssentialMatrixEstimator>,
+			HistogramScoringFunction<utils::ACBasedEssentialMatrixEstimator>,
 			preemption::SPRTPreemptiveVerfication<utils::ACBasedEssentialMatrixEstimator>> gcransac;
 		gcransac.settings.threshold = threshold / threshold_normalizer; // The inlier-outlier threshold
 		gcransac.settings.spatial_coherence_weight = spatial_coherence_weight; // The weight of the spatial coherence term
@@ -2310,13 +2404,16 @@ int findEssentialMatrixAC_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = neighborhood_size; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(normalized_points,
+		gcransac.run(points,//normalized_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
@@ -2333,13 +2430,16 @@ int findEssentialMatrixAC_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = neighborhood_size; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(normalized_points,
+		gcransac.run(points,//normalized_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model);
 
 		statistics = gcransac.getRansacStatistics();
@@ -2362,21 +2462,25 @@ int findEssentialMatrixAC_(
 		{
 			const size_t point_idx = statistics.inliers[inlier_idx];
 			weights[inlier_idx] = 
-				MAX(0, 1.0 - estimator.squaredResidual(normalized_points.row(point_idx), model) / squared_truncated_threshold);
+				MAX(0, 1.0 - estimator.squaredResidual(
+					//normalized_points.
+					points.row(point_idx), model) / squared_truncated_threshold);
 		}
 
 		std::vector<gcransac::Model> models;
 		estimator::solver::EssentialMatrixBundleAdjustmentSolver bundleOptimizer;
 		bundleOptimizer.estimateModel(
-			normalized_points,
+			points,//normalized_points,
 			&statistics.inliers[0],
 			statistics.inliers.size(),
 			models,
 			&weights[0]);
 			
 		// Scoring function
-		MSACScoringFunction<utils::ACBasedEssentialMatrixEstimator> scoring;
-		scoring.initialize(squared_truncated_threshold, normalized_points.rows);
+		HistogramScoringFunction<utils::ACBasedEssentialMatrixEstimator> scoring;
+		scoring.initialize(squared_truncated_threshold, 
+		//normalized_
+		points.rows);
 		// Score of the new model
 		Score score;
 		// Inliers of the new model
@@ -2386,11 +2490,14 @@ int findEssentialMatrixAC_(
 		for (auto &tmp_model : models)
 		{			
 			current_inliers.clear();
-			score = scoring.getScore(normalized_points, // All points
+			score = scoring.getScore(points,//normalized_points, // All points
 				tmp_model, // The current model parameters
 				estimator, // The estimator 
 				squared_truncated_threshold, // The current threshold
-				current_inliers); // The current inlier set
+				current_inliers,
+				his_weights,
+				his_max,
+				his_size, his_use); // The current inlier set
 
 			// Check if the updated model is better than the best so far
 			if (statistics.score < score.value)
@@ -2451,6 +2558,9 @@ int findEssentialMatrixSIFT_(
 	std::vector<double> &source_intrinsics, 
 	// The intrinsic camera matrix of the destination image
 	std::vector<double> &destination_intrinsics, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use, 
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -2553,11 +2663,11 @@ int findEssentialMatrixSIFT_(
 	const double threshold_normalizer =
 		0.25 * (intrinsics_src(0,0) + intrinsics_src(1,1) + intrinsics_dst(0,0) + intrinsics_dst(1,1));
 
-	cv::Mat normalized_points(points.size(), CV_64F);
-	utils::normalizeCorrespondences(points,
-		intrinsics_src,
-		intrinsics_dst,
-		normalized_points);
+	// cv::Mat normalized_points(points.size(), CV_64F);
+	// utils::normalizeCorrespondences(points,
+	// 	intrinsics_src,
+	// 	intrinsics_dst,
+	// 	normalized_points);
 
 	// Apply Graph-cut RANSAC
 	utils::SIFTBasedEssentialMatrixEstimator estimator(intrinsics_src,
@@ -2634,7 +2744,7 @@ int findEssentialMatrixSIFT_(
 
 		GCRANSAC<utils::SIFTBasedEssentialMatrixEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::SIFTBasedEssentialMatrixEstimator>,
+			HistogramScoringFunction<utils::SIFTBasedEssentialMatrixEstimator>,
 			preemption::SPRTPreemptiveVerfication<utils::SIFTBasedEssentialMatrixEstimator>> gcransac;
 		gcransac.settings.threshold = threshold / threshold_normalizer; // The inlier-outlier threshold
 		gcransac.settings.spatial_coherence_weight = spatial_coherence_weight; // The weight of the spatial coherence term
@@ -2643,13 +2753,16 @@ int findEssentialMatrixSIFT_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = neighborhood_size; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(normalized_points,
+		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
@@ -2666,13 +2779,16 @@ int findEssentialMatrixSIFT_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = neighborhood_size; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(normalized_points,
+		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model);
 
 		statistics = gcransac.getRansacStatistics();
@@ -2695,21 +2811,21 @@ int findEssentialMatrixSIFT_(
 		{
 			const size_t point_idx = statistics.inliers[inlier_idx];
 			weights[inlier_idx] = 
-				MAX(0, 1.0 - estimator.squaredResidual(normalized_points.row(point_idx), model) / squared_truncated_threshold);
+				MAX(0, 1.0 - estimator.squaredResidual(points.row(point_idx), model) / squared_truncated_threshold);
 		}
 
 		std::vector<gcransac::Model> models;
 		estimator::solver::EssentialMatrixBundleAdjustmentSolver bundleOptimizer;
 		bundleOptimizer.estimateModel(
-			normalized_points,
+			points,
 			&statistics.inliers[0],
 			statistics.inliers.size(),
 			models,
 			&weights[0]);
 			
 		// Scoring function
-		MSACScoringFunction<utils::SIFTBasedEssentialMatrixEstimator> scoring;
-		scoring.initialize(squared_truncated_threshold, normalized_points.rows);
+		HistogramScoringFunction<utils::SIFTBasedEssentialMatrixEstimator> scoring;
+		scoring.initialize(squared_truncated_threshold, points.rows);
 		// Score of the new model
 		Score score;
 		// Inliers of the new model
@@ -2719,11 +2835,14 @@ int findEssentialMatrixSIFT_(
 		for (auto &tmp_model : models)
 		{			
 			current_inliers.clear();
-			score = scoring.getScore(normalized_points, // All points
+			score = scoring.getScore(points, // All points
 				tmp_model, // The current model parameters
 				estimator, // The estimator 
 				squared_truncated_threshold, // The current threshold
-				current_inliers); // The current inlier set
+				current_inliers,
+				his_weights,
+				his_max,
+				his_size, his_use); // The current inlier set
 
 			// Check if the updated model is better than the best so far
 			if (statistics.score < score.value)
@@ -2783,6 +2902,9 @@ int findPlanarEssentialMatrix_(
 	std::vector<double> &source_intrinsics, 
 	// The intrinsic camera matrix of the destination image
 	std::vector<double> &destination_intrinsics, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use, 
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -2879,11 +3001,11 @@ int findPlanarEssentialMatrix_(
 	const double threshold_normalizer =
 		0.25 * (intrinsics_src(0,0) + intrinsics_src(1,1) + intrinsics_dst(0,0) + intrinsics_dst(1,1));
 
-	cv::Mat normalized_points(points.size(), CV_64F);
-	utils::normalizeCorrespondences(points,
-		intrinsics_src,
-		intrinsics_dst,
-		normalized_points);
+	// cv::Mat normalized_points(points.size(), CV_64F);
+	// utils::normalizeCorrespondences(points,
+	// 	intrinsics_src,
+	// 	intrinsics_dst,
+	// 	normalized_points);
 
 	// Apply Graph-cut RANSAC
 	utils::DefaultPlanarEssentialMatrixEstimator estimator(intrinsics_src,
@@ -2971,7 +3093,7 @@ int findPlanarEssentialMatrix_(
 
 		GCRANSAC<utils::DefaultPlanarEssentialMatrixEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::DefaultPlanarEssentialMatrixEstimator>,
+			HistogramScoringFunction<utils::DefaultPlanarEssentialMatrixEstimator>,
 			preemption::SPRTPreemptiveVerfication<utils::DefaultPlanarEssentialMatrixEstimator>> gcransac;
 		gcransac.settings.threshold = threshold / threshold_normalizer; // The inlier-outlier threshold
 		gcransac.settings.spatial_coherence_weight = spatial_coherence_weight; // The weight of the spatial coherence term
@@ -2982,13 +3104,16 @@ int findPlanarEssentialMatrix_(
 		gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
 		gcransac.settings.do_final_iterated_least_squares = false;
 		gcransac.settings.max_graph_cut_number = 100;
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(normalized_points,
+		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
@@ -3006,13 +3131,16 @@ int findPlanarEssentialMatrix_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(normalized_points,
+		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model);
 
 		statistics = gcransac.getRansacStatistics();
@@ -3035,21 +3163,21 @@ int findPlanarEssentialMatrix_(
 		{
 			const size_t point_idx = statistics.inliers[inlier_idx];
 			weights[inlier_idx] = 
-				MAX(0, 1.0 - estimator.squaredResidual(normalized_points.row(point_idx), model) / squared_truncated_threshold);
+				MAX(0, 1.0 - estimator.squaredResidual(points.row(point_idx), model) / squared_truncated_threshold);
 		}
 
 		std::vector<gcransac::Model> models;
 		estimator::solver::EssentialMatrixBundleAdjustmentSolver bundleOptimizer;
 		bundleOptimizer.estimateModel(
-			normalized_points,
+			points,
 			&statistics.inliers[0],
 			statistics.inliers.size(),
 			models,
 			&weights[0]);
 			
 		// Scoring function
-		MSACScoringFunction<utils::DefaultPlanarEssentialMatrixEstimator> scoring;
-		scoring.initialize(squared_truncated_threshold, normalized_points.rows);
+		HistogramScoringFunction<utils::DefaultPlanarEssentialMatrixEstimator> scoring;
+		scoring.initialize(squared_truncated_threshold, points.rows);
 		// Score of the new model
 		Score score;
 		// Inliers of the new model
@@ -3059,11 +3187,14 @@ int findPlanarEssentialMatrix_(
 		for (auto &tmp_model : models)
 		{			
 			current_inliers.clear();
-			score = scoring.getScore(normalized_points, // All points
+			score = scoring.getScore(points, // All points
 				tmp_model, // The current model parameters
 				estimator, // The estimator 
 				squared_truncated_threshold, // The current threshold
-				current_inliers); // The current inlier set
+				current_inliers,
+				his_weights,
+				his_max,
+				his_size, his_use); // The current inlier set
 
 			// Check if the updated model is better than the best so far
 			if (statistics.score < score.value)
@@ -3127,6 +3258,9 @@ int findGravityEssentialMatrix_(
 	std::vector<double> &source_intrinsics, 
 	// The intrinsic camera matrix of the destination image
 	std::vector<double> &destination_intrinsics, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use, 
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -3226,11 +3360,11 @@ int findGravityEssentialMatrix_(
 	const double threshold_normalizer =
 		0.25 * (intrinsics_src(0,0) + intrinsics_src(1,1) + intrinsics_dst(0,0) + intrinsics_dst(1,1));
 
-	cv::Mat normalized_points(points.size(), CV_64F);
-	utils::normalizeCorrespondences(points,
-		intrinsics_src,
-		intrinsics_dst,
-		normalized_points);
+	// cv::Mat normalized_points(points.size(), CV_64F);
+	// utils::normalizeCorrespondences(points,
+	// 	intrinsics_src,
+	// 	intrinsics_dst,
+	// 	normalized_points);
 
 	// Apply Graph-cut RANSAC
 	utils::DefaultGravityEssentialMatrixEstimator estimator(intrinsics_src,
@@ -3321,7 +3455,7 @@ int findGravityEssentialMatrix_(
 
 		GCRANSAC<utils::DefaultGravityEssentialMatrixEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::DefaultGravityEssentialMatrixEstimator>,
+			HistogramScoringFunction<utils::DefaultGravityEssentialMatrixEstimator>,
 			preemption::SPRTPreemptiveVerfication<utils::DefaultGravityEssentialMatrixEstimator>> gcransac;
 		gcransac.settings.threshold = threshold / threshold_normalizer; // The inlier-outlier threshold
 		gcransac.settings.spatial_coherence_weight = spatial_coherence_weight; // The weight of the spatial coherence term
@@ -3332,16 +3466,21 @@ int findGravityEssentialMatrix_(
 		gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
 		gcransac.settings.do_final_iterated_least_squares = false;
 		gcransac.settings.max_graph_cut_number = 100;
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 
 		// Start GC-RANSAC
-		gcransac.run(normalized_points,
+		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
-			inlier_selector);
+			inlier_selector
+			);
 
 		statistics = gcransac.getRansacStatistics();
 	}
@@ -3356,13 +3495,17 @@ int findGravityEssentialMatrix_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 
 		// Start GC-RANSAC
-		gcransac.run(normalized_points,
+		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model);
 
 		statistics = gcransac.getRansacStatistics();
@@ -3385,21 +3528,21 @@ int findGravityEssentialMatrix_(
 		{
 			const size_t point_idx = statistics.inliers[inlier_idx];
 			weights[inlier_idx] = 
-				MAX(0, 1.0 - estimator.squaredResidual(normalized_points.row(point_idx), model) / squared_truncated_threshold);
+				MAX(0, 1.0 - estimator.squaredResidual(points.row(point_idx), model) / squared_truncated_threshold);
 		}
 
 		std::vector<gcransac::Model> models;
 		estimator::solver::EssentialMatrixBundleAdjustmentSolver bundleOptimizer;
 		bundleOptimizer.estimateModel(
-			normalized_points,
+			points,
 			&statistics.inliers[0],
 			statistics.inliers.size(),
 			models,
 			&weights[0]);
 			
 		// Scoring function
-		MSACScoringFunction<utils::DefaultGravityEssentialMatrixEstimator> scoring;
-		scoring.initialize(squared_truncated_threshold, normalized_points.rows);
+		HistogramScoringFunction<utils::DefaultGravityEssentialMatrixEstimator> scoring;
+		scoring.initialize(squared_truncated_threshold, points.rows);
 		// Score of the new model
 		Score score;
 		// Inliers of the new model
@@ -3409,11 +3552,14 @@ int findGravityEssentialMatrix_(
 		for (auto &tmp_model : models)
 		{			
 			current_inliers.clear();
-			score = scoring.getScore(normalized_points, // All points
+			score = scoring.getScore(points, // All points
 				tmp_model, // The current model parameters
 				estimator, // The estimator 
 				squared_truncated_threshold, // The current threshold
-				current_inliers); // The current inlier set
+				current_inliers,
+				his_weights,
+				his_max,
+				his_size, his_use); // The current inlier set
 
 			// Check if the updated model is better than the best so far
 			if (statistics.score < score.value)
@@ -3469,6 +3615,9 @@ int findHomography_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &homography, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use, 
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -3643,7 +3792,7 @@ int findHomography_(
 
 			GCRANSAC<utils::DefaultHomographyEstimator,
 				AbstractNeighborhood,
-				MSACScoringFunction<utils::DefaultHomographyEstimator>,
+				HistogramScoringFunction<utils::DefaultHomographyEstimator>,
 				preemption::SPRTPreemptiveVerfication<utils::DefaultHomographyEstimator>,
 				inlier_selector::SpacePartitioningRANSAC<utils::DefaultHomographyEstimator, AbstractNeighborhood>> gcransac;
 			gcransac.settings.threshold = threshold; // The inlier-outlier threshold
@@ -3653,13 +3802,16 @@ int findHomography_(
 			gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 			gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 			gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
-
+			gcransac.settings.his_max = his_max;
+			gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 			// Start GC-RANSAC
 			gcransac.run(points,
 				estimator,
 				main_sampler.get(),
 				&local_optimization_sampler,
 				neighborhood_graph.get(),
+				his_weights,
 				model,
 				preemptive_verification,
 				inlier_selector);
@@ -3671,7 +3823,7 @@ int findHomography_(
 
 			GCRANSAC<utils::DefaultHomographyEstimator,
 				AbstractNeighborhood,
-				MSACScoringFunction<utils::DefaultHomographyEstimator>,
+				HistogramScoringFunction<utils::DefaultHomographyEstimator>,
 				preemption::SPRTPreemptiveVerfication<utils::DefaultHomographyEstimator>,
 				inlier_selector::EmptyInlierSelector<utils::DefaultHomographyEstimator, AbstractNeighborhood>> gcransac;
 			gcransac.settings.threshold = threshold; // The inlier-outlier threshold
@@ -3681,13 +3833,16 @@ int findHomography_(
 			gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 			gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 			gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
-
+			gcransac.settings.his_max = his_max;
+			gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 			// Start GC-RANSAC
 			gcransac.run(points,
 				estimator,
 				main_sampler.get(),
 				&local_optimization_sampler,
 				neighborhood_graph.get(),
+				his_weights,
 				model,
 				preemptive_verification,
 				inlier_selector);
@@ -3706,7 +3861,7 @@ int findHomography_(
 
 			GCRANSAC<utils::DefaultHomographyEstimator,
 				AbstractNeighborhood,
-				MSACScoringFunction<utils::DefaultHomographyEstimator>,
+				HistogramScoringFunction<utils::DefaultHomographyEstimator>,
 				preemption::EmptyPreemptiveVerfication<utils::DefaultHomographyEstimator>,
 				inlier_selector::SpacePartitioningRANSAC<utils::DefaultHomographyEstimator, AbstractNeighborhood>> gcransac;
 			gcransac.settings.threshold = threshold; // The inlier-outlier threshold
@@ -3716,13 +3871,16 @@ int findHomography_(
 			gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 			gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 			gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
-
+			gcransac.settings.his_max = his_max;
+			gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 			// Start GC-RANSAC
 			gcransac.run(points,
 				estimator,
 				main_sampler.get(),
 				&local_optimization_sampler,
 				neighborhood_graph.get(),
+				his_weights,
 				model,
 				preemptive_verification,
 				inlier_selector);
@@ -3734,7 +3892,7 @@ int findHomography_(
 
 			GCRANSAC<utils::DefaultHomographyEstimator,
 				AbstractNeighborhood,
-				MSACScoringFunction<utils::DefaultHomographyEstimator>,
+				HistogramScoringFunction<utils::DefaultHomographyEstimator>,
 				preemption::EmptyPreemptiveVerfication<utils::DefaultHomographyEstimator>,
 				inlier_selector::EmptyInlierSelector<utils::DefaultHomographyEstimator, AbstractNeighborhood>> gcransac;
 			gcransac.settings.threshold = threshold; // The inlier-outlier threshold
@@ -3744,13 +3902,16 @@ int findHomography_(
 			gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 			gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 			gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
-
+			gcransac.settings.his_max = his_max;
+			gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 			// Start GC-RANSAC
 			gcransac.run(points,
 				estimator,
 				main_sampler.get(),
 				&local_optimization_sampler,
 				neighborhood_graph.get(),
+				his_weights,
 				model,
 				preemptive_verification,
 				inlier_selector);
@@ -3801,6 +3962,9 @@ int findHomographyAC_(
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
 	std::vector<double> &homography, 
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use, 
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -3964,7 +4128,7 @@ int findHomographyAC_(
 
 		GCRANSAC<utils::ACBasedHomographyEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::ACBasedHomographyEstimator>,
+			HistogramScoringFunction<utils::ACBasedHomographyEstimator>,
 			preemption::SPRTPreemptiveVerfication<utils::ACBasedHomographyEstimator>,
 			inlier_selector::EmptyInlierSelector<utils::ACBasedHomographyEstimator, AbstractNeighborhood>> gcransac;
 		gcransac.settings.threshold = threshold; // The inlier-outlier threshold
@@ -3974,13 +4138,16 @@ int findHomographyAC_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = neighborhood_size; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
@@ -3994,7 +4161,7 @@ int findHomographyAC_(
 
 		GCRANSAC<utils::ACBasedHomographyEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::ACBasedHomographyEstimator>,
+			HistogramScoringFunction<utils::ACBasedHomographyEstimator>,
 			preemption::EmptyPreemptiveVerfication<utils::ACBasedHomographyEstimator>,
 			inlier_selector::EmptyInlierSelector<utils::ACBasedHomographyEstimator, AbstractNeighborhood>> gcransac;
 		gcransac.settings.threshold = threshold; // The inlier-outlier threshold
@@ -4004,13 +4171,16 @@ int findHomographyAC_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
@@ -4060,7 +4230,10 @@ int findHomographySIFT_(
 	// Output: the found inliers 
 	std::vector<bool>& inliers, 
 	// Output: the found 6D pose
-	std::vector<double> &homography, 
+	std::vector<double> &homography,
+	std::vector<double>& his_weights,
+	double his_max,
+	int his_size, bool his_use,  
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -4224,7 +4397,7 @@ int findHomographySIFT_(
 
 		GCRANSAC<utils::SIFTBasedHomographyEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::SIFTBasedHomographyEstimator>,
+			HistogramScoringFunction<utils::SIFTBasedHomographyEstimator>,
 			preemption::SPRTPreemptiveVerfication<utils::SIFTBasedHomographyEstimator>,
 			inlier_selector::EmptyInlierSelector<utils::SIFTBasedHomographyEstimator, AbstractNeighborhood>> gcransac;
 		gcransac.settings.threshold = threshold; // The inlier-outlier threshold
@@ -4234,13 +4407,16 @@ int findHomographySIFT_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = neighborhood_size; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
@@ -4254,7 +4430,7 @@ int findHomographySIFT_(
 
 		GCRANSAC<utils::SIFTBasedHomographyEstimator,
 			AbstractNeighborhood,
-			MSACScoringFunction<utils::SIFTBasedHomographyEstimator>,
+			HistogramScoringFunction<utils::SIFTBasedHomographyEstimator>,
 			preemption::EmptyPreemptiveVerfication<utils::SIFTBasedHomographyEstimator>,
 			inlier_selector::EmptyInlierSelector<utils::SIFTBasedHomographyEstimator, AbstractNeighborhood>> gcransac;
 		gcransac.settings.threshold = threshold; // The inlier-outlier threshold
@@ -4264,13 +4440,16 @@ int findHomographySIFT_(
 		gcransac.settings.max_iteration_number = max_iters; // The maximum number of iterations
 		gcransac.settings.min_iteration_number = min_iters; // The minimum number of iterations
 		gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
-
+		gcransac.settings.his_max = his_max;
+		gcransac.settings.his_size = his_size;
+		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
 		gcransac.run(points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
 			neighborhood_graph.get(),
+			his_weights,
 			model,
 			preemptive_verification,
 			inlier_selector);
