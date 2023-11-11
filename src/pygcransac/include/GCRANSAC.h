@@ -273,6 +273,9 @@ namespace gcransac
 		squared_truncated_threshold = truncated_threshold * truncated_threshold; // The squared least-squares threshold
 		scoring_function->initialize(squared_truncated_threshold, point_number); // Initializing the scoring function
 
+		if (settings.do_local_optimization>0){std::cout<<"Pls check if you use the local optimization!"<<std::endl;}
+		// if (settings.use_sprt){std::cout<<"Pls check if you use SPRT!"<<std::endl;}
+
 		// Initialize the pool for sampling
 		std::vector<size_t> pool(point_number);
 		for (size_t i = 0; i < point_number; ++i)
@@ -509,28 +512,28 @@ namespace gcransac
 				0.0);
 
 			// Apply local optimziation
-			if (settings.do_local_optimization && // Input flag to decide if local optimization is needed
-				do_local_optimization) // A flag to decide if all the criteria meet to apply local optimization
-			{
-				// Increase the number of local optimizations applied
-				++statistics.local_optimization_number;
+			// if (settings.do_local_optimization && // Input flag to decide if local optimization is needed
+			// 	do_local_optimization) // A flag to decide if all the criteria meet to apply local optimization
+			// {
+			// 	// Increase the number of local optimizations applied
+			// 	++statistics.local_optimization_number;
 
-				// Graph-cut-based local optimization 
-				graphCutLocalOptimization(points_, // All points
-					temp_inner_inliers[inlier_container_offset], // Inlier set of the current so-far-the-best model
-					his_weights_,
-					so_far_the_best_model, // Best model parameters
-					so_far_the_best_score, // Best model score
-					estimator_, // Estimator
-					settings.max_local_optimization_number); // Maximum local optimization steps
+			// 	// Graph-cut-based local optimization 
+			// 	graphCutLocalOptimization(points_, // All points
+			// 		temp_inner_inliers[inlier_container_offset], // Inlier set of the current so-far-the-best model
+			// 		his_weights_,
+			// 		so_far_the_best_model, // Best model parameters
+			// 		so_far_the_best_score, // Best model score
+			// 		estimator_, // Estimator
+			// 		settings.max_local_optimization_number); // Maximum local optimization steps
 
-				// Update the maximum number of iterations variable
-				max_iteration =
-					getIterationNumber(so_far_the_best_score.inlier_number, // The current inlier number
-						point_number, // The number of points
-						sample_number, // The sample size
-						log_probability); // log(1 - confidence)
-			}
+			// 	// Update the maximum number of iterations variable
+			// 	max_iteration =
+			// 		getIterationNumber(so_far_the_best_score.inlier_number, // The current inlier number
+			// 			point_number, // The number of points
+			// 			sample_number, // The sample size
+			// 			log_probability); // log(1 - confidence)
+			// }
 
 			// Apply time limit if there is a required FPS set
 			if (settings.desired_fps > -1)
@@ -559,21 +562,21 @@ namespace gcransac
 		}
 
 		// Apply a final local optimization if it hasn't been applied yet
-		if (settings.do_local_optimization &&
-			statistics.local_optimization_number == 0)
-		{
-			// Increase the number of local optimizations applied
-			++statistics.local_optimization_number;
+		// if (settings.do_local_optimization &&
+		// 	statistics.local_optimization_number == 0)
+		// {
+		// 	// Increase the number of local optimizations applied
+		// 	++statistics.local_optimization_number;
 
-			// Graph-cut-based local optimization 
-			graphCutLocalOptimization(points_, // All points
-				temp_inner_inliers[inlier_container_offset], // Inlier set of the current so-far-the-best model
-				his_weights_,
-				so_far_the_best_model, // Best model parameters
-				so_far_the_best_score, // Best model score
-				estimator_, // Estimator
-				settings.max_local_optimization_number); // Maximum local optimization steps
-		}
+		// 	// Graph-cut-based local optimization 
+		// 	graphCutLocalOptimization(points_, // All points
+		// 		temp_inner_inliers[inlier_container_offset], // Inlier set of the current so-far-the-best model
+		// 		his_weights_,
+		// 		so_far_the_best_model, // Best model parameters
+		// 		so_far_the_best_score, // Best model score
+		// 		estimator_, // Estimator
+		// 		settings.max_local_optimization_number); // Maximum local optimization steps
+		// }
 
 		// Recalculate the score if needed (i.e. there is some inconstistency in
 		// in the number of inliers stored and calculated).
@@ -596,6 +599,7 @@ namespace gcransac
 		{
 			Model model = so_far_the_best_model; // The model which is re-estimated by iteratively re-weighted least-squares
 			bool success;
+			// std::cout<<temp_inner_inliers[inlier_container_offset].size()<<settings.new_local<<std::endl;
 			if (settings.new_local)
 			{
 				success = bestInlierFitting(
@@ -616,8 +620,10 @@ namespace gcransac
 				his_weights_,
 				model); // The estimated modelv
 			}
-			
-			// std::cout<<"success2"<<success<<std::endl;
+
+			if (statistics.local_optimization_number>0){std::cout<<"local optim ites are not zero!"<<std::endl;}
+			// if(!success){std::cout<<"unsuccess"<<std::endl;}
+
 			if (success)
 			{
 				inlier_container_idx = (inlier_container_offset + 1) % 2;
@@ -641,38 +647,38 @@ namespace gcransac
 			}
 		}
 		
-		if (!iterative_refitting_applied) // Otherwise, do only one least-squares fitting on all of the inliers
-		{
+		// if (!iterative_refitting_applied) // Otherwise, do only one least-squares fitting on all of the inliers
+		// {
 
-			// Estimate the final model using the full inlier set
-			models.clear();
-			estimator_.estimateModelNonminimal(points_,
-				&(temp_inner_inliers[inlier_container_offset])[0],
-				so_far_the_best_score.inlier_number,
-				&models);
-			// Selecting the best model by their scores
-			for (auto &model : models)
-			{
-				inlier_container_idx = (inlier_container_offset + 1) % 2;
-				temp_inner_inliers[inlier_container_idx].clear();
-				current_score = scoring_function->getScore(points_, // All points
-					model, // Best model parameters
-					estimator_, // The estimator
-					settings.threshold, // The inlier-outlier threshold
-					temp_inner_inliers[inlier_container_idx],
-					his_weights_,
-					settings.his_max,
-					settings.his_size, settings.his_use); // The current inliers
+		// 	// Estimate the final model using the full inlier set
+		// 	models.clear();
+		// 	estimator_.estimateModelNonminimal(points_,
+		// 		&(temp_inner_inliers[inlier_container_offset])[0],
+		// 		so_far_the_best_score.inlier_number,
+		// 		&models);
+		// 	// Selecting the best model by their scores
+		// 	for (auto &model : models)
+		// 	{
+		// 		inlier_container_idx = (inlier_container_offset + 1) % 2;
+		// 		temp_inner_inliers[inlier_container_idx].clear();
+		// 		current_score = scoring_function->getScore(points_, // All points
+		// 			model, // Best model parameters
+		// 			estimator_, // The estimator
+		// 			settings.threshold, // The inlier-outlier threshold
+		// 			temp_inner_inliers[inlier_container_idx],
+		// 			his_weights_,
+		// 			settings.his_max,
+		// 			settings.his_size, settings.his_use); // The current inliers
 
-				if (so_far_the_best_score < current_score)
-				{
-					so_far_the_best_model.descriptor = model.descriptor;
-					inlier_container_offset = inlier_container_idx;
-				}
-			}
-			if (models.size() == 0)
-				so_far_the_best_model.descriptor = models[0].descriptor;
-		}
+		// 		if (so_far_the_best_score < current_score)
+		// 		{
+		// 			so_far_the_best_model.descriptor = model.descriptor;
+		// 			inlier_container_offset = inlier_container_idx;
+		// 		}
+		// 	}
+		// 	if (models.size() == 0)
+		// 		so_far_the_best_model.descriptor = models[0].descriptor;
+		// }
 
 		// Return the inlier set and the estimated model parameters
 		statistics.inliers.swap(temp_inner_inliers[inlier_container_offset]);
@@ -694,7 +700,9 @@ namespace gcransac
 		Model &model_,
 		const bool use_weighting_)
 	{
+		// std::cout<< settings.max_least_squares_iterations<<std::endl;
 		const size_t sample_size = estimator_.sampleSize(); // The minimal sample size
+		// std::cout<<"sample-size"<<sample_size<<" "<<inliers_.size()<<std::endl;
 		if (inliers_.size() <= sample_size) // Return if there are not enough points
 			return false;
 
@@ -839,7 +847,6 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 		const _ModelEstimator &estimator_,
 		const double threshold_,
 		std::vector<size_t> &inliers_,
-		// std::vector<size_t> &inlierMatches_,
 		const std::vector<double> &his_weights_,
 		Model &model_,
 		const bool use_weighting_)
@@ -852,31 +859,32 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 
 		std::vector<std::pair<double, size_t>> residuals;
 		double residual;
-		residuals.reserve(points_.rows);
-		for (size_t pointIdx = 0; pointIdx < points_.rows; ++pointIdx)
+		residuals.reserve(inliers_.size());
+		for (const size_t &inlierIdx : inliers_)
 		{
 			residual = estimator_.residual(
-				points_.row(pointIdx),
+				points_.row(inlierIdx),
 				model_
 			);
+			// std::cout<<"inliers"<<inlierIdx<<"compute "<<residual<<std::endl;
 			if (residual < threshold_)
-				residuals.emplace_back(std::make_pair(residual, pointIdx));
+				residuals.emplace_back(std::make_pair(residual, inlierIdx));
 		}
 
 		cv::Mat inlierMatches;
-		inlierMatches.reserve(points_.rows);
-		std::sort(residuals.begin(), residuals.end(), compareByFirst);
+		inlierMatches.reserve(inliers_.size());
+		std::sort(residuals.begin(), residuals.end());
 
 		for (const auto&residual :residuals)
 		{
+			// std::cout<<"for inlier matches"<<residual.second<<" "<<residual.first<<std::endl;
 			inlierMatches.push_back(points_.row(residual.second));
 		}
 		// std::cout<<inlierMatches.rows<<inliers_.size()<<std::endl;
-
+		// std::cout<<inliers_.size()<<" "<<residuals.size()<<" "<<inlierMatches.rows<<std::endl;
 		size_t iterations = 0; // Number of least-squares iterations
 		std::vector<size_t> tmp_inliers; // Inliers of the current model
-		int stepSize = 10;
-		// std::cout<<residuals.size()<<std::endl;
+		int stepSize = 1;
 		bool success;
 		for (size_t sampleSize = startingSampleSize; sampleSize < residuals.size(); sampleSize += stepSize)
 		{
@@ -890,7 +898,7 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 			// 		0.99,
 			// 		1e10);
 			// else:
-			// std::cout<<"before model built"<<sampleSize<<std::endl;
+			// std::cout<<"before model built"<<residuals[sampleSize].first<<" "<<residuals[sampleSize].second<<std::endl;
 
 			E = cv::findEssentialMat(
 					inlierMatches(cv::Rect(0, 0, 2, sampleSize)),
@@ -927,7 +935,7 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 			else
 				// std::cout<<"get_ccccout"<<std::endl;
 				break;
-			success = sampleSize >= startingSampleSize;
+			success = true;
 		}		
 				// if (!updated)
 				// 	break;

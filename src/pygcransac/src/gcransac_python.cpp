@@ -1102,6 +1102,8 @@ int findFundamentalMatrix_(
 		gcransac.settings.his_max = his_max;
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
+		gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
+		gcransac.settings.new_local = new_local;
 		// Start GC-RANSAC
 		gcransac.run(points,
 			estimator,
@@ -2029,6 +2031,7 @@ int findEssentialMatrix_(
 
 	if (use_sprt)
 	{
+		std::cout<<"still use sprt, pls check!"<<std::endl;
 		// Initializing SPRT test
 		preemption::SPRTPreemptiveVerfication<utils::DefaultEssentialMatrixEstimator> preemptive_verification(
 			points,
@@ -2079,6 +2082,8 @@ int findEssentialMatrix_(
 		gcransac.settings.his_max = his_max;
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
+		gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
+		gcransac.settings.new_local = new_local;
 		// Start GC-RANSAC
 		gcransac.run(points,//normalized_points,
 			estimator,

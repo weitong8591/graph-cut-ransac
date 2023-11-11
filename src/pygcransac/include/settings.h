@@ -70,8 +70,8 @@ namespace gcransac
 
 			Settings() :
 				do_final_iterated_least_squares(true),
-				do_local_optimization(true),
-				do_graph_cut(true),
+				do_local_optimization(false),
+				do_graph_cut(false),
 				use_inlier_limit(false),
 				desired_fps(-1),
 				max_local_optimization_number(10),
