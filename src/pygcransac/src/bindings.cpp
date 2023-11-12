@@ -9,6 +9,8 @@ namespace py = pybind11;
 
 py::tuple findRigidTransform(
 	py::array_t<double>  x1y1z1x2y2z2_,
+	py::array_t<double>  x1y1z1x2y2z2_all_,
+
 	py::array_t<double>  probabilities_,
 	py::array_t<double>  his_weights_,
 	double his_max,
@@ -42,6 +44,13 @@ py::tuple findRigidTransform(
 	std::vector<double> x1y1z1x2y2z2;
 	x1y1z1x2y2z2.assign(ptr1, ptr1 + buf1.size);
 
+
+	py::buffer_info buf_all = x1y1z1x2y2z2_all_.request();
+	double *ptr_all = (double *)buf_all.ptr;
+	std::vector<double> x1y1z1x2y2z2_all;
+	x1y1z1x2y2z2_all.assign(ptr_all, ptr_all + buf_all.size);
+
+
     std::vector<double> probabilities;
     if (sampler == 3 || sampler == 4)
     {
@@ -60,6 +69,8 @@ py::tuple findRigidTransform(
 
 	int num_inl = findRigidTransform_(
 		x1y1z1x2y2z2,
+				x1y1z1x2y2z2_all,
+
 		probabilities,
 		inliers,
 		pose,
@@ -99,6 +110,7 @@ py::tuple findRigidTransform(
 
 py::tuple find6DPose(
 	py::array_t<double>  x1y1x2y2z2_,
+	py::array_t<double>  x1y1z1x2y2z2_all_,
 	py::array_t<double>  probabilities_,
 	py::array_t<double> his_weights_, 
 	double his_max,
@@ -131,6 +143,10 @@ py::tuple find6DPose(
 	std::vector<double> x1y1x2y2z2;
 	x1y1x2y2z2.assign(ptr1, ptr1 + buf1.size);
 
+	py::buffer_info buf_all = x1y1z1x2y2z2_all_.request();
+	double *ptr_all = (double *)buf_all.ptr;
+	std::vector<double> x1y1z1x2y2z2_all;
+	x1y1z1x2y2z2_all.assign(ptr_all, ptr_all + buf_all.size);
     std::vector<double> probabilities;
     if (sampler == 3 || sampler == 4)
     {
@@ -149,6 +165,7 @@ py::tuple find6DPose(
 
 	int num_inl = find6DPose_(
 		x1y1x2y2z2,
+		x1y1z1x2y2z2_all,
 		probabilities,
 		inliers,
 		pose,
@@ -186,6 +203,7 @@ py::tuple find6DPose(
 
 py::tuple findFundamentalMatrix(
 	py::array_t<double>  correspondences_,
+py::array_t<double>  all_correspondences_,
 	int h1, int w1, int h2, int w2,
 	py::array_t<double>  probabilities_,
 	py::array_t<double> his_weights_,
@@ -224,6 +242,10 @@ py::tuple findFundamentalMatrix(
 	double *ptr1 = (double *)buf1.ptr;
 	std::vector<double> correspondences;
 	correspondences.assign(ptr1, ptr1 + buf1.size);
+	py::buffer_info buf_all = all_correspondences_.request();
+	double *ptr_all = (double *) buf_all.ptr;
+    std::vector<double> all_correspondences;
+    all_correspondences.assign(ptr_all, ptr_all + buf_all.size);
 
     std::vector<double> probabilities;
     if (sampler == 3 || sampler == 4)
@@ -246,7 +268,7 @@ py::tuple findFundamentalMatrix(
 	if (solver == 0) // Point correspondence-based fundamental matrix estimation
 		num_inl = findFundamentalMatrix_(
 			correspondences,
-			probabilities,
+			all_correspondences,			probabilities,
 			inliers,
 			F,
 			his_weights,
@@ -269,7 +291,7 @@ py::tuple findFundamentalMatrix(
 	else if (solver == 1) // SIFT correspondence-based fundamental matrix estimation
 		num_inl = findFundamentalMatrixSIFT_(
 			correspondences,
-			probabilities,
+			all_correspondences,			probabilities,
 			inliers,
 			F,
 			his_weights,
@@ -290,6 +312,7 @@ py::tuple findFundamentalMatrix(
 	else if (solver == 2) // Affine correspondence-based fundamental matrix estimation
 		num_inl = findFundamentalMatrixAC_(
 			correspondences,
+			all_correspondences,			
 			probabilities,
 			inliers,
 			F,
@@ -327,6 +350,7 @@ py::tuple findFundamentalMatrix(
 
 
 py::tuple findLine2D(py::array_t<double>  x1y1_,
+	py::array_t<double> x1y1_all_,
 	int w1, int h1,
 	py::array_t<double>  probabilities_,
 	py::array_t<double>  his_weights_,
@@ -359,6 +383,11 @@ py::tuple findLine2D(py::array_t<double>  x1y1_,
 	std::vector<double> x1y1;
 	x1y1.assign(ptr1, ptr1 + buf1.size);
 
+	py::buffer_info buf_all = x1y1_all_.request();
+	double *ptr_all = (double *)buf_all.ptr;
+	std::vector<double> x1y1_all;
+	x1y1_all.assign(ptr_all, ptr_all + buf_all.size);
+
     std::vector<double> probabilities;
     if (sampler == 3 || sampler == 4)
     {
@@ -374,7 +403,7 @@ py::tuple findLine2D(py::array_t<double>  x1y1_,
 	std::vector<double> linemodel(3);
 	std::vector<bool> inliers(NUM_TENTS);
 
-	int num_inl = findLine2D_(x1y1,
+	int num_inl = findLine2D_(x1y1,x1y1_all,
 		probabilities,
 		inliers,
 		linemodel,
@@ -412,6 +441,7 @@ py::tuple findLine2D(py::array_t<double>  x1y1_,
 
 py::tuple findGravityEssentialMatrix(
 	py::array_t<double>  correspondences_,
+py::array_t<double>  all_correspondences_,
 	py::array_t<double>  source_gravity_,
 	py::array_t<double>  destination_gravity_,
 	py::array_t<double>  K1_,
@@ -447,6 +477,10 @@ py::tuple findGravityEssentialMatrix(
     double *ptr1 = (double *) buf1.ptr;
     std::vector<double> corrs;
     corrs.assign(ptr1, ptr1 + buf1.size);
+	py::buffer_info buf_all = all_correspondences_.request();
+	double *ptr_all = (double *) buf_all.ptr;
+    std::vector<double> all_correspondences;
+    all_correspondences.assign(ptr_all, ptr_all + buf_all.size);
 
 	// Assigning K1
     py::buffer_info K1_buf = K1_.request();
@@ -516,6 +550,7 @@ py::tuple findGravityEssentialMatrix(
 
     int num_inl = findGravityEssentialMatrix_(
 							corrs,
+							all_correspondences,
 							gravity_source,
 							gravity_destination,
 							probabilities,
@@ -555,6 +590,7 @@ py::tuple findGravityEssentialMatrix(
 
 py::tuple findPlanarEssentialMatrix(
 	py::array_t<double>  correspondences_,
+py::array_t<double>  all_correspondences_,
 	py::array_t<double>  K1_,
 	py::array_t<double>  K2_,
 	int h1, int w1, int h2, int w2,
@@ -588,6 +624,10 @@ py::tuple findPlanarEssentialMatrix(
     double *ptr1 = (double *) buf1.ptr;
     std::vector<double> corrs;
     corrs.assign(ptr1, ptr1 + buf1.size);
+	py::buffer_info buf_all = all_correspondences_.request();
+	double *ptr_all = (double *) buf_all.ptr;
+    std::vector<double> all_correspondences;
+    all_correspondences.assign(ptr_all, ptr_all + buf_all.size);
 
     py::buffer_info K1_buf = K1_.request();
     size_t three_a = K1_buf.shape[0];
@@ -629,7 +669,7 @@ py::tuple findPlanarEssentialMatrix(
     std::vector<bool> inliers(NUM_TENTS);
 
     int num_inl = findPlanarEssentialMatrix_(
-							corrs,
+							corrs,all_correspondences,
 							probabilities,
                            	inliers,
                            	F, K1, K2,
@@ -665,6 +705,7 @@ py::tuple findPlanarEssentialMatrix(
 }
 
 py::tuple findEssentialMatrix(py::array_t<double>  correspondences_,
+py::array_t<double>  all_correspondences_,
                                 py::array_t<double>  K1_,
 								py::array_t<double>  K2_,                                int h1, int w1, int h2, int w2,
     					 		py::array_t<double>  probabilities_,
@@ -704,6 +745,11 @@ py::tuple findEssentialMatrix(py::array_t<double>  correspondences_,
     double *ptr1 = (double *) buf1.ptr;
     std::vector<double> correspondences;
     correspondences.assign(ptr1, ptr1 + buf1.size);
+
+    py::buffer_info buf_all = all_correspondences_.request();
+	double *ptr_all = (double *) buf_all.ptr;
+    std::vector<double> all_correspondences;
+    all_correspondences.assign(ptr_all, ptr_all + buf_all.size);
 
     py::buffer_info K1_buf = K1_.request();
     size_t three_a = K1_buf.shape[0];
@@ -748,6 +794,7 @@ py::tuple findEssentialMatrix(py::array_t<double>  correspondences_,
 	if (solver == 0) // Point correspondence-based fundamental matrix estimation
 		num_inl = findEssentialMatrix_(
 			correspondences,
+			all_correspondences,
 			probabilities,
 			inliers,
 			F,
@@ -772,7 +819,7 @@ py::tuple findEssentialMatrix(py::array_t<double>  correspondences_,
 	else if (solver == 1) // SIFT correspondence-based fundamental matrix estimation
 		num_inl = findEssentialMatrixSIFT_(
 			correspondences,
-			probabilities,
+			all_correspondences,			probabilities,
 			inliers,
 			F,
 			K1, K2,
@@ -794,7 +841,7 @@ py::tuple findEssentialMatrix(py::array_t<double>  correspondences_,
 	else if (solver == 2) // Affine correspondence-based fundamental matrix estimation
 		num_inl = findEssentialMatrixAC_(
 			correspondences,
-			probabilities,
+			all_correspondences,			probabilities,
 			inliers,
 			F,
 			K1, K2,
@@ -831,6 +878,7 @@ py::tuple findEssentialMatrix(py::array_t<double>  correspondences_,
 }
 
 py::tuple findHomography(py::array_t<double>  correspondences_,
+py::array_t<double>  all_correspondences_,
                          int h1, int w1, int h2, int w2,
     					 py::array_t<double>  probabilities_,
 						py::array_t<double>  his_weights_,
@@ -869,6 +917,10 @@ py::tuple findHomography(py::array_t<double>  correspondences_,
     std::vector<double> correspondences;
     correspondences.assign(ptr1, ptr1 + buf1.size);
 
+    py::buffer_info buf_all = all_correspondences_.request();
+	double *ptr_all = (double *) buf_all.ptr;
+    std::vector<double> all_correspondences;
+    all_correspondences.assign(ptr_all, ptr_all + buf_all.size);
     std::vector<double> probabilities;
     if (sampler == 3 || sampler == 4)
     {
@@ -890,7 +942,7 @@ py::tuple findHomography(py::array_t<double>  correspondences_,
 	if (solver == 0) // Point correspondence-based fundamental matrix estimation
 		num_inl = findHomography_(
 			correspondences,
-			probabilities,
+			all_correspondences,			probabilities,
 			inliers,
 			H,
 			his_weights,
@@ -912,7 +964,7 @@ py::tuple findHomography(py::array_t<double>  correspondences_,
 	else if (solver == 1) // SIFT correspondence-based fundamental matrix estimation
 		num_inl = findHomographySIFT_(
 			correspondences,
-			probabilities,
+			all_correspondences,			probabilities,
 			inliers,
 			H,
 			his_weights,
@@ -933,7 +985,7 @@ py::tuple findHomography(py::array_t<double>  correspondences_,
 	else if (solver == 2) // Affine correspondence-based fundamental matrix estimation
 		num_inl = findHomographyAC_(
 			correspondences,
-			probabilities,
+			all_correspondences,			probabilities,
 			inliers,
 			H,
 			his_weights,
@@ -989,7 +1041,7 @@ PYBIND11_PLUGIN(pygcransac) {
 
 	m.def("findFundamentalMatrix", &findFundamentalMatrix, R"doc(some doc)doc",
         py::arg("correspondences"),
-		py::arg("h1"),
+		py::arg("all_correspondences"),		py::arg("h1"),
 		py::arg("w1"),
 		py::arg("h2"),
 		py::arg("w2"),
@@ -1018,6 +1070,8 @@ py::arg("his_use")=false,
 
 	m.def("findLine2D", &findLine2D, R"doc(some doc)doc",
 		py::arg("x1y1"),
+		py::arg("x1y1_all"),
+
 		py::arg("w1"),
 		py::arg("h1"),
 		py::arg("probabilities"),
@@ -1039,6 +1093,8 @@ py::arg("his_use")=false,
 
 	m.def("findRigidTransform", &findRigidTransform, R"doc(some doc)doc",
 		py::arg("x1y1z1x2y2z2"),
+		py::arg("x1y1z1x2y2z2_all"),
+
         py::arg("probabilities"),
 		py::arg("his_weights"),
 		py::arg("his_max")=10.0,
@@ -1060,7 +1116,7 @@ py::arg("his_use")=false,
 
 	m.def("find6DPose", &find6DPose, R"doc(some doc)doc",
         py::arg("correspondences"),
-        py::arg("probabilities"),
+		py::arg("all_correspondences"),        py::arg("probabilities"),
 		py::arg("his_weights"),
 		py::arg("his_max")=10.0,
 py::arg("his_size")=200,
@@ -1080,6 +1136,7 @@ py::arg("his_use")=false,
 
     m.def("findEssentialMatrix", &findEssentialMatrix, R"doc(some doc)doc",
         py::arg("correspondences"),
+		py::arg("all_correspondences"),
         py::arg("K1"),
         py::arg("K2"),
         py::arg("h1"),
@@ -1111,7 +1168,8 @@ py::arg("his_use")=false,
 
     m.def("findPlanarEssentialMatrix", &findPlanarEssentialMatrix, R"doc(some doc)doc",
         py::arg("correspondences"),
-        py::arg("K1"),
+		py::arg("all_correspondences"),        
+		py::arg("K1"),
         py::arg("K2"),
         py::arg("h1"),
         py::arg("w1"),
@@ -1136,7 +1194,8 @@ py::arg("his_use")=false,
 
     m.def("findGravityEssentialMatrix", &findGravityEssentialMatrix, R"doc(some doc)doc",
         py::arg("correspondences"),
-        py::arg("source_gravity"),
+		py::arg("all_correspondences"),
+		py::arg("source_gravity"),
         py::arg("destination_gravity"),
         py::arg("K1"),
         py::arg("K2"),
@@ -1163,7 +1222,7 @@ py::arg("his_use")=false,
 
   m.def("findHomography", &findHomography, R"doc(some doc)doc",
         py::arg("correspondences"),
-        py::arg("h1"),
+		py::arg("all_correspondences"),        py::arg("h1"),
         py::arg("w1"),
         py::arg("h2"),
         py::arg("w2"),

@@ -550,6 +550,7 @@ namespace gcransac
 						weights.push_back(1.0);
 					}
 					gcransac.run(data_, // All data points
+					data_,
 						estimator, // The fundamental matrix estimator
 						&sampler, // The main sampler 
 						&sampler, // The sampler for local optimization

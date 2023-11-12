@@ -68,6 +68,7 @@ namespace gcransac
 
 		// The main method applying Graph-Cut RANSAC to the input data points
 		void run(const cv::Mat &points_,  // Data points
+			const cv::Mat &all_points_, 
 			const _ModelEstimator &estimator_, // The model estimator
 			sampler::Sampler<cv::Mat, size_t> *main_sampler_, // The main sampler is used outside the local optimization
 			sampler::Sampler<cv::Mat, size_t> *local_optimization_sampler_, // The local optimization sampler is used inside the local optimization
@@ -79,6 +80,7 @@ namespace gcransac
 
 		// The main method applying Graph-Cut RANSAC to the input data points
 		void run(const cv::Mat &points_,  // Data points
+			const cv::Mat &all_points_, 
 			const _ModelEstimator &estimator_, // The model estimator
 			sampler::Sampler<cv::Mat, size_t> *main_sampler_, // The main sampler is used outside the local optimization
 			sampler::Sampler<cv::Mat, size_t> *local_optimization_sampler_, // The local optimization sampler is used inside the local optimization
@@ -159,6 +161,7 @@ namespace gcransac
 			const bool use_weighting_ = true); // Use iteratively re-weighted least-squares
 		bool bestInlierFitting(
 			const cv::Mat &points_, // The input data points
+			const cv::Mat &all_points_, // The input data points
 			const _ModelEstimator &estimator_, // The model estimator
 			const double threshold_, // The inlier-outlier threshold
 			std::vector<size_t> &inliers_, // The resulting inlier set
@@ -189,6 +192,7 @@ namespace gcransac
 	template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunction, class _PreemptiveModelVerification, class _FastInlierSelector>
 	void GCRANSAC<_ModelEstimator, _NeighborhoodGraph, _ScoringFunction, _PreemptiveModelVerification, _FastInlierSelector>::run(
 		const cv::Mat &points_,  // Data points
+		const cv::Mat &all_points_,
 		const _ModelEstimator &estimator_, // The model estimator
 		sampler::Sampler<cv::Mat, size_t> *main_sampler_, // The main sampler is used outside the local optimization
 		sampler::Sampler<cv::Mat, size_t> *local_optimization_sampler_, // The local optimization sampler is used inside the local optimization
@@ -204,6 +208,7 @@ namespace gcransac
 
 		// Running GC-RANSAC by using the specified preemptive verification
 		run(points_,
+		all_points_,
 			estimator_,
 			main_sampler_,
 			local_optimization_sampler_,
@@ -218,6 +223,7 @@ namespace gcransac
 	template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunction, class _PreemptiveModelVerification, class _FastInlierSelector>
 	void GCRANSAC<_ModelEstimator, _NeighborhoodGraph, _ScoringFunction, _PreemptiveModelVerification, _FastInlierSelector>::run(
 		const cv::Mat &points_,  // Data points
+		const cv::Mat &all_points_,  // Data points
 		const _ModelEstimator &estimator_, // The model estimator
 		sampler::Sampler<cv::Mat, size_t> *main_sampler_, // The main sampler is used outside the local optimization
 		sampler::Sampler<cv::Mat, size_t> *local_optimization_sampler_, // The local optimization sampler is used inside the local optimization
@@ -604,6 +610,7 @@ namespace gcransac
 			{
 				success = bestInlierFitting(
 				points_, // The input data points
+				all_points_,
 				estimator_, // The model estimator
 				settings.threshold, // The inlier-outlier threshold
 				temp_inner_inliers[inlier_container_offset], // The resulting inlier set
@@ -844,6 +851,7 @@ bool compareByFirst(std::pair<double, size_t> & a, std::pair<double, size_t> & b
 template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunction, class _PreemptiveModelVerification, class _FastInlierSelector>
 	bool GCRANSAC<_ModelEstimator, _NeighborhoodGraph, _ScoringFunction, _PreemptiveModelVerification, _FastInlierSelector>::bestInlierFitting(
 		const cv::Mat &points_,
+		const cv::Mat &all_points_,
 		const _ModelEstimator &estimator_,
 		const double threshold_,
 		std::vector<size_t> &inliers_,
@@ -859,26 +867,40 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 
 		std::vector<std::pair<double, size_t>> residuals;
 		double residual;
-		residuals.reserve(inliers_.size());
-		for (const size_t &inlierIdx : inliers_)
+		residuals.reserve(all_points_.rows);
+		// for (const size_t &Idx : inliers_)
+		for (size_t Idx=0; Idx< all_points_.rows; Idx++)
 		{
 			residual = estimator_.residual(
-				points_.row(inlierIdx),
+				all_points_.row(Idx),
 				model_
 			);
 			// std::cout<<"inliers"<<inlierIdx<<"compute "<<residual<<std::endl;
 			if (residual < threshold_)
-				residuals.emplace_back(std::make_pair(residual, inlierIdx));
+				residuals.emplace_back(std::make_pair(residual, Idx));
 		}
+		// for (const size_t &inlierIdx : inliers_)
+		// {
+		// 	residual = estimator_.residual(
+		// 		points_.row(inlierIdx),
+		// 		model_
+		// 	);
+		// 	// std::cout<<"inliers"<<inlierIdx<<"compute "<<residual<<std::endl;
+		// 	if (residual < threshold_)
+		// 		residuals.emplace_back(std::make_pair(residual, inlierIdx));
+		// }
 
 		cv::Mat inlierMatches;
-		inlierMatches.reserve(inliers_.size());
+		inlierMatches.reserve(residuals.size());
+		// inlierMatches.reserve(inliers_.size());
 		std::sort(residuals.begin(), residuals.end());
 
-		for (const auto&residual :residuals)
+		for (const auto&residual : residuals)
 		{
 			// std::cout<<"for inlier matches"<<residual.second<<" "<<residual.first<<std::endl;
-			inlierMatches.push_back(points_.row(residual.second));
+			// inlierMatches.push_back(points_.row(residual.second));
+			inlierMatches.push_back(all_points_.row(residual.second));
+
 		}
 		// std::cout<<inlierMatches.rows<<inliers_.size()<<std::endl;
 		// std::cout<<inliers_.size()<<" "<<residuals.size()<<" "<<inlierMatches.rows<<std::endl;

@@ -41,6 +41,7 @@ using namespace gcransac;
 int findLine2D_(
  	// The 2D points in the image
 	std::vector<double>& points,
+	std::vector<double>& all_points,
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -90,7 +91,9 @@ int findLine2D_(
 
 	// The matrix containing the points that will be passed to GC-RANSAC
 	cv::Mat point_matrix(num_points, 2, CV_64F, &points[0]);
-
+	const size_t &num_points_all = all_points.size() / 2;
+	// The matrix containing the points that will be passed to GC-RANSAC
+	cv::Mat point_matrix_all(num_points_all, 2, CV_64F, &all_points[0]);
 	// Initializing the neighborhood structure based on the provided paramereters
 	typedef neighborhood::NeighborhoodGraph<cv::Mat> AbstractNeighborhood;
 	std::unique_ptr<AbstractNeighborhood> neighborhood_graph;
@@ -219,7 +222,7 @@ int findLine2D_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(point_matrix,
+		gcransac.run(point_matrix,point_matrix_all,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -245,7 +248,7 @@ int findLine2D_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(point_matrix,
+		gcransac.run(point_matrix,point_matrix_all,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -290,6 +293,7 @@ int findLine2D_(
 int find6DPose_(
 	// The 2D-3D correspondences
 	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences,
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -333,6 +337,9 @@ int find6DPose_(
 {
 	size_t num_tents = correspondences.size() / 5;
 	cv::Mat points(num_tents, 5, CV_64F, &correspondences[0]);
+
+	size_t num_tents_all = all_correspondences.size() / 5;
+	cv::Mat all_points(num_tents_all, 5, CV_64F, &all_correspondences[0]);
 
 	typedef neighborhood::NeighborhoodGraph<cv::Mat> AbstractNeighborhood;
 	std::unique_ptr<AbstractNeighborhood> neighborhood_graph;
@@ -459,7 +466,7 @@ int find6DPose_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -486,7 +493,7 @@ int find6DPose_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -532,7 +539,8 @@ int find6DPose_(
 // A method for estimating a rigid translation between two point clouds
 int findRigidTransform_(
 	// The first point cloud
-	std::vector<double>& correspondences, 
+	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences, 
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -580,6 +588,10 @@ int findRigidTransform_(
 {
 	size_t num_tents = correspondences.size() / 6;
 	cv::Mat points(num_tents, 6, CV_64F, &correspondences[0]);
+
+	size_t num_tents_all = all_correspondences.size() / 6;
+	cv::Mat all_points(num_tents_all, 6, CV_64F, &all_correspondences[0]);
+
 	size_t iterations = 0;
 	double box_size[6];
 
@@ -752,7 +764,7 @@ int findRigidTransform_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -790,7 +802,7 @@ int findRigidTransform_(
 			gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 			// Start GC-RANSAC
-			gcransac.run(points,
+			gcransac.run(points,all_points,
 				estimator,
 				main_sampler.get(),
 				&local_optimization_sampler,
@@ -821,7 +833,7 @@ int findRigidTransform_(
 			gcransac.settings.his_max = his_max;
 			gcransac.settings.his_size = his_size;	
 			// Start GC-RANSAC
-			gcransac.run(points,
+			gcransac.run(points,all_points,
 				estimator,
 				main_sampler.get(),
 				&local_optimization_sampler,
@@ -871,6 +883,7 @@ int findRigidTransform_(
 int findFundamentalMatrix_(
 	// The 2D-2D point correspondences
 	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences,
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -923,7 +936,8 @@ int findFundamentalMatrix_(
 {
 	int num_tents = correspondences.size() / 4;
 	cv::Mat points(num_tents, 4, CV_64F, &correspondences[0]);
-
+	int num_tents_all = all_correspondences.size() / 4;
+	cv::Mat all_points(num_tents_all, 4, CV_64F, &all_correspondences[0]);
 	typedef neighborhood::NeighborhoodGraph<cv::Mat> AbstractNeighborhood;
 	std::unique_ptr<AbstractNeighborhood> neighborhood_graph;
 
@@ -1077,7 +1091,7 @@ int findFundamentalMatrix_(
 		gcransac.settings.new_local = new_local;
 
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -1105,7 +1119,7 @@ int findFundamentalMatrix_(
 		gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
 		gcransac.settings.new_local = new_local;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -1215,6 +1229,7 @@ int findFundamentalMatrix_(
 int findFundamentalMatrixAC_(
 	// The 2D-2D point correspondences
 	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences,
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -1266,6 +1281,9 @@ int findFundamentalMatrixAC_(
 	// Each row contains 8 elements as [x1, y1, x2, y2, a11, a12, a21, a22]
 	int num_tents = correspondences.size() / 8;
 	cv::Mat points(num_tents, 8, CV_64F, &correspondences[0]);
+
+	size_t num_tents_all = all_correspondences.size() / 8;
+	cv::Mat all_points(num_tents_all, 8, CV_64F, &all_correspondences[0]);
 
 	// The neighborhood structure used for the graph-cut-based local optimization
 	typedef neighborhood::NeighborhoodGraph<cv::Mat> AbstractNeighborhood;
@@ -1403,7 +1421,7 @@ int findFundamentalMatrixAC_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -1429,7 +1447,7 @@ int findFundamentalMatrixAC_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -1525,6 +1543,7 @@ int findFundamentalMatrixAC_(
 int findFundamentalMatrixSIFT_(
 	// The 2D-2D point correspondences
 	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences,
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -1576,7 +1595,8 @@ int findFundamentalMatrixSIFT_(
 	// Each row contains 8 elements as [x1, y1, x2, y2, size1, size2, ori1, ori2]
 	int num_tents = correspondences.size() / 8;
 	cv::Mat points(num_tents, 8, CV_64F, &correspondences[0]);
-
+	int num_tents_all = all_correspondences.size() / 8;
+	cv::Mat all_points(num_tents_all, 8, CV_64F, &all_correspondences[0]);
 	// The neighborhood structure used for the graph-cut-based local optimization
 	typedef neighborhood::NeighborhoodGraph<cv::Mat> AbstractNeighborhood;
 	std::unique_ptr<AbstractNeighborhood> neighborhood_graph;
@@ -1713,7 +1733,7 @@ int findFundamentalMatrixSIFT_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -1739,7 +1759,7 @@ int findFundamentalMatrixSIFT_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -1834,6 +1854,7 @@ int findFundamentalMatrixSIFT_(
 int findEssentialMatrix_(
 	// The 2D-2D point correspondences
 	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences,
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -1891,7 +1912,8 @@ int findEssentialMatrix_(
 {
 	int num_tents = correspondences.size() / 4;
 	cv::Mat points(num_tents, 4, CV_64F, &correspondences[0]);
-
+	int num_tents_all = all_correspondences.size() / 4;
+	cv::Mat all_points(num_tents_all, 4, CV_64F, &all_correspondences[0]);
 	typedef neighborhood::NeighborhoodGraph<cv::Mat> AbstractNeighborhood;
 	std::unique_ptr<AbstractNeighborhood> neighborhood_graph;
 
@@ -2056,7 +2078,7 @@ int findEssentialMatrix_(
 		gcransac.settings.new_local = new_local;
 
 		// Start GC-RANSAC
-		gcransac.run(points,//normalized_points,
+		gcransac.run(points,all_points,//normalized_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -2085,7 +2107,7 @@ int findEssentialMatrix_(
 		gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
 		gcransac.settings.new_local = new_local;
 		// Start GC-RANSAC
-		gcransac.run(points,//normalized_points,
+		gcransac.run(points,all_points,//normalized_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -2196,6 +2218,7 @@ int findEssentialMatrix_(
 int findEssentialMatrixAC_(
 	// The 2D-2D point correspondences
 	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences,
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -2250,6 +2273,9 @@ int findEssentialMatrixAC_(
 {
 	int num_tents = correspondences.size() / 8;
 	cv::Mat points(num_tents, 8, CV_64F, &correspondences[0]);
+
+	size_t num_tents_all = all_correspondences.size() / 8;
+	cv::Mat all_points(num_tents_all, 8, CV_64F, &all_correspondences[0]);
 
 	typedef neighborhood::NeighborhoodGraph<cv::Mat> AbstractNeighborhood;
 	std::unique_ptr<AbstractNeighborhood> neighborhood_graph;
@@ -2413,7 +2439,7 @@ int findEssentialMatrixAC_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,//normalized_points,
+		gcransac.run(points,all_points,//normalized_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -2439,7 +2465,7 @@ int findEssentialMatrixAC_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,//normalized_points,
+		gcransac.run(points,all_points,//normalized_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -2553,6 +2579,7 @@ int findEssentialMatrixAC_(
 int findEssentialMatrixSIFT_(
 	// The 2D-2D point correspondences
 	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences,
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -2607,6 +2634,9 @@ int findEssentialMatrixSIFT_(
 {
 	int num_tents = correspondences.size() / 8;
 	cv::Mat points(num_tents, 8, CV_64F, &correspondences[0]);
+
+	size_t num_tents_all = all_correspondences.size() / 8;
+	cv::Mat all_points(num_tents_all, 8, CV_64F, &all_correspondences[0]);
 
 	typedef neighborhood::NeighborhoodGraph<cv::Mat> AbstractNeighborhood;
 	std::unique_ptr<AbstractNeighborhood> neighborhood_graph;
@@ -2762,7 +2792,7 @@ int findEssentialMatrixSIFT_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -2788,7 +2818,7 @@ int findEssentialMatrixSIFT_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -2897,6 +2927,7 @@ int findEssentialMatrixSIFT_(
 int findPlanarEssentialMatrix_(
 	// The 2D-2D point correspondences.
 	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences,
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -2949,7 +2980,8 @@ int findPlanarEssentialMatrix_(
 {
 	int num_tents = correspondences.size() / 4;
 	cv::Mat points(num_tents, 4, CV_64F, &correspondences[0]);
-
+	int num_tents_all = all_correspondences.size() / 4;
+	cv::Mat all_points(num_tents_all, 4, CV_64F, &all_correspondences[0]);
 	typedef neighborhood::NeighborhoodGraph<cv::Mat> AbstractNeighborhood;
 	std::unique_ptr<AbstractNeighborhood> neighborhood_graph;
 
@@ -3113,7 +3145,7 @@ int findPlanarEssentialMatrix_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -3140,7 +3172,7 @@ int findPlanarEssentialMatrix_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -3249,6 +3281,7 @@ int findPlanarEssentialMatrix_(
 int findGravityEssentialMatrix_(
 	// The 2D-2D point correspondences.
 	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences,
 	// The 2D-2D point correspondences.
 	std::vector<double>& gravity_source,
 	// The 2D-2D point correspondences.
@@ -3305,7 +3338,8 @@ int findGravityEssentialMatrix_(
 {
 	int num_tents = correspondences.size() / 4;
 	cv::Mat points(num_tents, 4, CV_64F, &correspondences[0]);
-
+	int num_tents_all = all_correspondences.size() / 4;
+	cv::Mat all_points(num_tents_all, 4, CV_64F, &all_correspondences[0]);
 	typedef neighborhood::NeighborhoodGraph<cv::Mat> AbstractNeighborhood;
 	std::unique_ptr<AbstractNeighborhood> neighborhood_graph;
 
@@ -3476,7 +3510,7 @@ int findGravityEssentialMatrix_(
 		gcransac.settings.his_use = his_use;
 
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -3505,7 +3539,7 @@ int findGravityEssentialMatrix_(
 		gcransac.settings.his_use = his_use;
 
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -3614,6 +3648,7 @@ int findGravityEssentialMatrix_(
 int findHomography_(
 	// The 2D-2D point correspondences.
 	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences,
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -3668,7 +3703,8 @@ int findHomography_(
 {
 	int num_tents = correspondences.size() / 4;
 	cv::Mat points(num_tents, 4, CV_64F, &correspondences[0]);
-	
+	int num_tents_all = all_correspondences.size() / 4;
+	cv::Mat all_points(num_tents_all, 4, CV_64F, &all_correspondences[0]);	
 	typedef neighborhood::NeighborhoodGraph<cv::Mat> AbstractNeighborhood;
 	std::unique_ptr<AbstractNeighborhood> neighborhood_graph;
 
@@ -3811,7 +3847,7 @@ int findHomography_(
 			gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 			// Start GC-RANSAC
-			gcransac.run(points,
+			gcransac.run(points,all_points,
 				estimator,
 				main_sampler.get(),
 				&local_optimization_sampler,
@@ -3842,7 +3878,7 @@ int findHomography_(
 			gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 			// Start GC-RANSAC
-			gcransac.run(points,
+			gcransac.run(points,all_points,
 				estimator,
 				main_sampler.get(),
 				&local_optimization_sampler,
@@ -3880,7 +3916,7 @@ int findHomography_(
 			gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 			// Start GC-RANSAC
-			gcransac.run(points,
+			gcransac.run(points,all_points,
 				estimator,
 				main_sampler.get(),
 				&local_optimization_sampler,
@@ -3911,7 +3947,7 @@ int findHomography_(
 			gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 			// Start GC-RANSAC
-			gcransac.run(points,
+			gcransac.run(points,all_points,
 				estimator,
 				main_sampler.get(),
 				&local_optimization_sampler,
@@ -3961,6 +3997,7 @@ int findHomography_(
 int findHomographyAC_(
 	// The 2D-2D point correspondences.
 	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences,
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -4012,6 +4049,9 @@ int findHomographyAC_(
 	int num_tents = correspondences.size() / 8;
 	cv::Mat points(num_tents, 8, CV_64F, &correspondences[0]);
 	
+	size_t num_tents_all = all_correspondences.size() / 8;
+	cv::Mat all_points(num_tents_all, 8, CV_64F, &all_correspondences[0]);
+
 	typedef neighborhood::NeighborhoodGraph<cv::Mat> AbstractNeighborhood;
 	std::unique_ptr<AbstractNeighborhood> neighborhood_graph;
 
@@ -4147,7 +4187,7 @@ int findHomographyAC_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -4180,7 +4220,7 @@ int findHomographyAC_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -4230,6 +4270,7 @@ int findHomographyAC_(
 int findHomographySIFT_(
 	// The 2D-2D point correspondences.
 	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences,
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -4281,6 +4322,9 @@ int findHomographySIFT_(
 	int num_tents = correspondences.size() / 8;
 	cv::Mat points(num_tents, 8, CV_64F, &correspondences[0]);
 	
+	size_t num_tents_all = all_correspondences.size() / 8;
+	cv::Mat all_points(num_tents_all, 8, CV_64F, &all_correspondences[0]);
+
 	typedef neighborhood::NeighborhoodGraph<cv::Mat> AbstractNeighborhood;
 	std::unique_ptr<AbstractNeighborhood> neighborhood_graph;
 
@@ -4416,7 +4460,7 @@ int findHomographySIFT_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,
@@ -4449,7 +4493,7 @@ int findHomographySIFT_(
 		gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
 		// Start GC-RANSAC
-		gcransac.run(points,
+		gcransac.run(points,all_points,
 			estimator,
 			main_sampler.get(),
 			&local_optimization_sampler,

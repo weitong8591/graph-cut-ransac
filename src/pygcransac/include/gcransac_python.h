@@ -5,7 +5,7 @@
 int findRigidTransform_(
 	// The 3D-3D point correspondences
 	std::vector<double>& correspondences,
-	// The probabilities for each 3D-3D point correspondence if available
+	std::vector<double>& all_correspondences,	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
 	std::vector<bool>& inliers, 
@@ -54,7 +54,7 @@ int findRigidTransform_(
 int find6DPose_(
 	// The 2D-3D correspondences
 	std::vector<double>& correspondences,
-	// The probabilities for each 3D-3D point correspondence if available
+	std::vector<double>& all_correspondences,	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
 	std::vector<bool>& inliers, 
@@ -99,6 +99,7 @@ int find6DPose_(
  int findLine2D_(
  	// The 2D points in the image
 	std::vector<double>& points,
+		std::vector<double>& all_points,
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -147,7 +148,7 @@ int find6DPose_(
 int findFundamentalMatrix_(
 	// The 2D-2D point correspondences
 	std::vector<double>& correspondences,
-	// The probabilities for each 3D-3D point correspondence if available
+	std::vector<double>& all_correspondences,	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
 	std::vector<bool>& inliers, 
@@ -201,7 +202,7 @@ int findFundamentalMatrix_(
 int findFundamentalMatrixAC_(
 	// The 2D-2D point correspondences
 	std::vector<double>& correspondences,
-	// The probabilities for each 3D-3D point correspondence if available
+	std::vector<double>& all_correspondences,	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
 	std::vector<bool>& inliers, 
@@ -253,7 +254,7 @@ int findFundamentalMatrixAC_(
 int findFundamentalMatrixSIFT_(
 	// The 2D-2D point correspondences
 	std::vector<double>& correspondences,
-	// The probabilities for each 3D-3D point correspondence if available
+	std::vector<double>& all_correspondences,	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
 	std::vector<bool>& inliers, 
@@ -305,6 +306,8 @@ int findFundamentalMatrixSIFT_(
 int findEssentialMatrix_(
 	// The 2D-2D point correspondences
 	std::vector<double>& correspondences,
+	std::vector<double>& all_correspondences,
+
 	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
@@ -366,7 +369,7 @@ int findEssentialMatrix_(
 int findEssentialMatrixAC_(
 	// The 2D-2D point correspondences
 	std::vector<double>& correspondences,
-	// The probabilities for each 3D-3D point correspondence if available
+	std::vector<double>& all_correspondences,	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
 	std::vector<bool>& inliers, 
@@ -422,7 +425,7 @@ int findEssentialMatrixAC_(
 int findEssentialMatrixSIFT_(
 	// The 2D-2D point correspondences
 	std::vector<double>& correspondences,
-	// The probabilities for each 3D-3D point correspondence if available
+	std::vector<double>& all_correspondences,	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
 	std::vector<bool>& inliers, 
@@ -478,7 +481,7 @@ int findEssentialMatrixSIFT_(
 int findGravityEssentialMatrix_(
 	// The 2D-2D point correspondences.
 	std::vector<double>& correspondences,
-	// The 2D-2D point correspondences.
+	std::vector<double>& all_correspondences,	// The 2D-2D point correspondences.
 	std::vector<double>& gravity_source,
 	// The 2D-2D point correspondences.
 	std::vector<double>& gravity_destination,
@@ -536,7 +539,7 @@ int findGravityEssentialMatrix_(
 int findPlanarEssentialMatrix_(
 	// The 2D-2D point correspondences.
 	std::vector<double>& correspondences,
-	// The probabilities for each 3D-3D point correspondence if available
+	std::vector<double>& all_correspondences,	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
 	std::vector<bool>& inliers, 
@@ -590,7 +593,7 @@ int findPlanarEssentialMatrix_(
 int findHomography_(
 	// The 2D-2D point correspondences.
 	std::vector<double>& correspondences,
-	// The probabilities for each 3D-3D point correspondence if available
+	std::vector<double>& all_correspondences,	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
 	std::vector<bool>& inliers, 
@@ -646,7 +649,7 @@ int findHomography_(
 int findHomographyAC_(
 	// The 2D-2D point correspondences.
 	std::vector<double>& correspondences,
-	// The probabilities for each 3D-3D point correspondence if available
+	std::vector<double>& all_correspondences,	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
 	std::vector<bool>& inliers, 
@@ -698,7 +701,7 @@ int findHomographyAC_(
 int findHomographySIFT_(
 	// The 2D-2D point correspondences.
 	std::vector<double>& correspondences,
-	// The probabilities for each 3D-3D point correspondence if available
+	std::vector<double>& all_correspondences,	// The probabilities for each 3D-3D point correspondence if available
 	std::vector<double> &point_probabilities,
 	// Output: the found inliers 
 	std::vector<bool>& inliers, 

@@ -3,11 +3,19 @@ project(GraphCutRANSAC LANGUAGES CXX)
 
 # indicate if OPENMP should be enabled
 option(CREATE_SAMPLE_PROJECT "Create the Sample Project" ON)
-
+set(CREATE_SAMPLE_PROJECT OFF)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+# add_definitions(-std=c++17)
+
+set(pybind11_DIR /home/weitong/.local/lib/python3.8/site-packages/pybind11/share/cmake/pybind11)
+include_directories(/home/weitong/.local/lib/python3.8/site-packages/pybind11/include)
+find_package(pybind11 REQUIRED)
+# SET(PYBIND11_CPP_STANDARD "${PYBIND11_CPP_STANDARD} -std=c++17")
+set(PYBIND11_CPP_STANDARD "-std=c++17")
 
 find_package(OpenCV)
 if (OPENCV_FOUND)
@@ -33,6 +41,7 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated -ansi")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -ftree-vectorize -funroll-loops")
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+
 
 find_package(Eigen3 REQUIRED)
 set(EIGEN_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
@@ -72,8 +81,11 @@ target_link_libraries (${PROJECT_NAME}
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+# set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# set(CMAKE_CXX_EXTENSIONS OFF)
 
-	
 # ==============================================================================
 # Structure: Applications
 # ==============================================================================
