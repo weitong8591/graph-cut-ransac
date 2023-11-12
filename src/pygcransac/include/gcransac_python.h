@@ -360,7 +360,8 @@ int findEssentialMatrix_(
 	// The number of RANSAC iterations done in the local optimization
 	int lo_number,
 	bool final_fit,
-	bool new_local
+	bool new_local,
+	int group_num
 	
 	
 	);

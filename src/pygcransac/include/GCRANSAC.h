@@ -906,7 +906,7 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 		// std::cout<<inliers_.size()<<" "<<residuals.size()<<" "<<inlierMatches.rows<<std::endl;
 		size_t iterations = 0; // Number of least-squares iterations
 		std::vector<size_t> tmp_inliers; // Inliers of the current model
-		int stepSize = 1;
+		int stepSize = residuals.size()/settings.group_num;//1;
 		bool success;
 		for (size_t sampleSize = startingSampleSize; sampleSize < residuals.size(); sampleSize += stepSize)
 		{
@@ -921,6 +921,7 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 			// 		1e10);
 			// else:
 			// std::cout<<"before model built"<<residuals[sampleSize].first<<" "<<residuals[sampleSize].second<<std::endl;
+			// std::cout<<"before"<<inliers_.size()<<std::endl;
 
 			E = cv::findEssentialMat(
 					inlierMatches(cv::Rect(0, 0, 2, sampleSize)),
@@ -945,7 +946,7 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 					his_weights_,
 					settings.his_max,
 					settings.his_size, settings.his_use); // The current inlier set
-			// std::cout<<score.value<<score.inlier_number<<std::endl;
+			std::cout<<score.value<<score.inlier_number<<std::endl;
 			if (score.value >= best_score.value)
 					{			
 						// std::cout<<"update"<<score.value<<std::endl;
@@ -954,9 +955,9 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 						model_ = model; // Store the new model
 						inliers_.swap(tmp_inliers); // Store the inliers of the new model
 					}
-			else
-				// std::cout<<"get_ccccout"<<std::endl;
-				break;
+			// else
+			// std::cout<<"inliers_"<<inliers_.size()<<std::endl;
+			// 	break;
 			success = true;
 		}		
 				// if (!updated)

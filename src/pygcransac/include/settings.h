@@ -66,7 +66,8 @@ namespace gcransac
 				spatial_coherence_weight, // The weight of the spatial coherence term
 				his_max;
 			
-			int his_size;
+			int his_size,
+				group_num;
 
 			Settings() :
 				do_final_iterated_least_squares(true),
@@ -89,7 +90,8 @@ namespace gcransac
 				his_max(10.),
 				his_size(200),
 				his_use(false),
-				new_local(false)
+				new_local(false),
+				group_num(10)
 
 			{
 

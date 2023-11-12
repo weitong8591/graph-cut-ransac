@@ -726,7 +726,8 @@ py::array_t<double>  all_correspondences_,
 								double sampler_variance,
 								int solver,
 								bool final_fit,
-								bool new_local)
+								bool new_local,
+								int group_num)
 {
     py::buffer_info buf1 = correspondences_.request();
     size_t NUM_TENTS = buf1.shape[0];
@@ -815,7 +816,8 @@ py::array_t<double>  all_correspondences_,
 			sampler_variance,
 			lo_number,
 			final_fit,
-			new_local);
+			new_local,
+			group_num);
 	else if (solver == 1) // SIFT correspondence-based fundamental matrix estimation
 		num_inl = findEssentialMatrixSIFT_(
 			correspondences,
@@ -1162,7 +1164,9 @@ py::arg("his_use")=false,
 		py::arg("sampler_variance") = 0.1,
 		py::arg("solver") = 0,
 		py::arg("final_fit") = true,
-		py::arg("new_local") = false
+		py::arg("new_local") = false,
+		py::arg("group_num") = 10
+
 		)
 		;
 

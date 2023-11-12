@@ -1907,7 +1907,8 @@ int findEssentialMatrix_(
 	// The number of RANSAC iterations done in the local optimization
 	int lo_number,
 	bool do_final_iterated_least_squares,
-	bool new_local
+	bool new_local,
+	int group_num
 	)
 {
 	int num_tents = correspondences.size() / 4;
@@ -2076,6 +2077,7 @@ int findEssentialMatrix_(
 		gcransac.settings.his_use = his_use;
 		gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
 		gcransac.settings.new_local = new_local;
+		gcransac.settings.group_num = group_num;
 
 		// Start GC-RANSAC
 		gcransac.run(points,all_points,//normalized_points,
@@ -2106,6 +2108,7 @@ int findEssentialMatrix_(
 		gcransac.settings.his_use = his_use;
 		gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
 		gcransac.settings.new_local = new_local;
+		gcransac.settings.group_num = group_num;
 		// Start GC-RANSAC
 		gcransac.run(points,all_points,//normalized_points,
 			estimator,
