@@ -903,10 +903,12 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 
 		}
 		// std::cout<<inlierMatches.rows<<inliers_.size()<<std::endl;
-		// std::cout<<inliers_.size()<<" "<<residuals.size()<<" "<<inlierMatches.rows<<std::endl;
 		size_t iterations = 0; // Number of least-squares iterations
 		std::vector<size_t> tmp_inliers; // Inliers of the current model
-		int stepSize = residuals.size()/settings.group_num;//1;
+		int step = residuals.size()/settings.group_num;
+		int stepSize = std::max(step, 1);//1;
+		// std::cout<<stepSize<<" "<<residuals.size()<<" "<<settings.group_num<<std::endl;
+
 		bool success;
 		for (size_t sampleSize = startingSampleSize; sampleSize < residuals.size(); sampleSize += stepSize)
 		{
