@@ -946,7 +946,7 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 					his_weights_,
 					settings.his_max,
 					settings.his_size, settings.his_use); // The current inlier set
-			std::cout<<score.value<<score.inlier_number<<std::endl;
+			// std::cout<<score.value<<score.inlier_number<<std::endl;
 			if (score.value >= best_score.value)
 					{			
 						// std::cout<<"update"<<score.value<<std::endl;
