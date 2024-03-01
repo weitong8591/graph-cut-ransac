@@ -164,6 +164,7 @@ namespace gcransac
 			const cv::Mat &all_points_, // The input data points
 			const _ModelEstimator &estimator_, // The model estimator
 			const double threshold_, // The inlier-outlier threshold
+			const double polish_threshold_, // The inlier-outlier threshold
 			std::vector<size_t> &inliers_, // The resulting inlier set
 			const std::vector<double> &his_weights_,
 			Model &model_, // The estimated model
@@ -240,7 +241,7 @@ namespace gcransac
 		// Variables for measuring the processing time
 		std::chrono::time_point<std::chrono::system_clock> start, end;
 		std::chrono::duration<double> elapsed_seconds;
-
+		// std::cout<<"debug 244"<<std::endl;
 		statistics.main_sampler_name = main_sampler_->getName();
 		statistics.local_optimizer_sampler_name = local_optimization_sampler_->getName();
 		statistics.iteration_number = 0;
@@ -453,6 +454,7 @@ namespace gcransac
 							his_weights_,
 							settings.his_max,
 							settings.his_size, settings.his_use,
+							settings.scale,settings.avgdiagnol,
 							so_far_the_best_score, // The score of the current so-far-the-best model
 							true, // Flag to decide if the inliers are needed
 							&preselected_index_sets); // The point index set consisting of the pre-selected points' indices
@@ -467,6 +469,7 @@ namespace gcransac
 							his_weights_,
 							settings.his_max,
 							settings.his_size, settings.his_use,
+							settings.scale,settings.avgdiagnol,
 							so_far_the_best_score, // The score of the current so-far-the-best model
 							true); // Flag to decide if the inliers are needed
 				}
@@ -492,6 +495,7 @@ namespace gcransac
 							his_weights_,
 							settings.his_max,
 							settings.his_size, settings.his_use,
+							settings.scale,settings.avgdiagnol,
 							so_far_the_best_score, // The score of the current so-far-the-best model
 							true); // Flag to decide if the inliers are needed
 
@@ -588,7 +592,7 @@ namespace gcransac
 		// in the number of inliers stored and calculated).
 		if (temp_inner_inliers[inlier_container_offset].size() != so_far_the_best_score.inlier_number)
 			inlier_container_offset = (inlier_container_offset + 1) % 2;
-
+		// std::cout<<"debug in gc"<<std::endl;
 		if (temp_inner_inliers[inlier_container_offset].size() != so_far_the_best_score.inlier_number)
 			so_far_the_best_score = scoring_function->getScore(points_, // All points
 				so_far_the_best_model, // Best model parameters
@@ -597,7 +601,7 @@ namespace gcransac
 				temp_inner_inliers[inlier_container_offset],
 				his_weights_,
 				settings.his_max,
-				settings.his_size, settings.his_use); // The current inliers
+				settings.his_size, settings.his_use,settings.scale,settings.avgdiagnol); // The current inliers
 
 		// Apply iteration least-squares fitting to get the final model parameters if needed
 		bool iterative_refitting_applied = false;
@@ -613,6 +617,7 @@ namespace gcransac
 				all_points_,
 				estimator_, // The model estimator
 				settings.threshold, // The inlier-outlier threshold
+				settings.polish_threshold, 
 				temp_inner_inliers[inlier_container_offset], // The resulting inlier set
 				his_weights_,
 				model); // The estimated model
@@ -642,7 +647,8 @@ namespace gcransac
 					temp_inner_inliers[inlier_container_idx],
 					his_weights_,
 					settings.his_max,
-					settings.his_size, settings.his_use); // The current inliers
+					settings.his_size, settings.his_use,
+					settings.scale,settings.avgdiagnol); // The current inliers
 				// std::cout<<so_far_the_best_score.value<<' '<<current_score.value;
 				if (so_far_the_best_score < current_score)
 				{	
@@ -780,7 +786,8 @@ namespace gcransac
 					tmp_inliers,
 					his_weights_,
 					settings.his_max,
-					settings.his_size, settings.his_use); // The current inlier set
+					settings.his_size, settings.his_use,
+					settings.scale,settings.avgdiagnol); // The current inlier set
 
 				// Break if the are not enough inliers
 				if (tmp_inliers.size() < sample_size)
@@ -812,7 +819,8 @@ namespace gcransac
 						tmp_inliers,
 						his_weights_,
 						settings.his_max,
-						settings.his_size, settings.his_use); // The inliers of the current model
+						settings.his_size, settings.his_use,
+						settings.scale,settings.avgdiagnol); // The inliers of the current model
 
 					// Continue if the are not enough inliers
 					if (tmp_inliers.size() < sample_size)
@@ -854,16 +862,19 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 		const cv::Mat &all_points_,
 		const _ModelEstimator &estimator_,
 		const double threshold_,
+		const double polish_threshold_,
 		std::vector<size_t> &inliers_,
 		const std::vector<double> &his_weights_,
 		Model &model_,
 		const bool use_weighting_)
 	{
+		
 		size_t sampleSize;
 		Score best_score;
 		const size_t startingSampleSize = estimator_.sampleSize(); // The minimal sample size
 		if (inliers_.size() <= startingSampleSize) // Return if there are not enough points
 			return false;
+		
 
 		std::vector<std::pair<double, size_t>> residuals;
 		double residual;
@@ -876,16 +887,17 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 				model_
 			);
 			// std::cout<<"inliers"<<inlierIdx<<"compute "<<residual<<std::endl;
-			if (residual < threshold_)
+			if (residual < polish_threshold_)
 				residuals.emplace_back(std::make_pair(residual, Idx));
 		}
+		
+
 		// for (const size_t &inlierIdx : inliers_)
 		// {
 		// 	residual = estimator_.residual(
 		// 		points_.row(inlierIdx),
 		// 		model_
 		// 	);
-		// 	// std::cout<<"inliers"<<inlierIdx<<"compute "<<residual<<std::endl;
 		// 	if (residual < threshold_)
 		// 		residuals.emplace_back(std::make_pair(residual, inlierIdx));
 		// }
@@ -912,7 +924,7 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 		bool success;
 		for (size_t sampleSize = startingSampleSize; sampleSize < residuals.size(); sampleSize += stepSize)
 		{
-			cv::Mat E;
+			cv::Mat H;
 			// if constexpr (std::is_same<_Estimator, gcransac::utils::DefaultEssentialMatrixEstimator>())
 			// 	E = cv::findEssentialMat(
 			// 		inlierMatches(cv::Rect(0, 0, 2, sampleSize)),
@@ -925,19 +937,30 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 			// std::cout<<"before model built"<<residuals[sampleSize].first<<" "<<residuals[sampleSize].second<<std::endl;
 			// std::cout<<"before"<<inliers_.size()<<std::endl;
 
-			E = cv::findEssentialMat(
+			H = cv::findHomography(
 					inlierMatches(cv::Rect(0, 0, 2, sampleSize)),
 					inlierMatches(cv::Rect(2, 0, 2, sampleSize)),
-					cv::Mat::eye(3, 3, CV_64F),
 					cv::LMEDS,//do_lsq_ == 2 ? cv::RANSAC :
-					0.99,
-					1e10);
+					3.//,1e10,0.99
+					);
+			// E = cv::findEssentialMat(
+			// 		inlierMatches(cv::Rect(0, 0, 2, sampleSize)),
+			// 		inlierMatches(cv::Rect(2, 0, 2, sampleSize)),
+			// 		cv::Mat::eye(3, 3, CV_64F),
+			// 		cv::LMEDS,//do_lsq_ == 2 ? cv::RANSAC :
+			// 		0.99,
+			// 		1e10);
 			// std::cout<<"model built"<<sampleSize<<std::endl;
 	
-			gcransac::EssentialMatrix model;
-			model.descriptor<<E.at<double>(0, 0), E.at<double>(0, 1), E.at<double>(0, 2),
-				E.at<double>(1, 0), E.at<double>(1, 1), E.at<double>(1, 2),
-				E.at<double>(2, 0), E.at<double>(2, 1), E.at<double>(2, 2);
+			// gcransac::EssentialMatrix model;
+			// model.descriptor<<E.at<double>(0, 0), E.at<double>(0, 1), E.at<double>(0, 2),
+			// 	E.at<double>(1, 0), E.at<double>(1, 1), E.at<double>(1, 2),
+			// 	E.at<double>(2, 0), E.at<double>(2, 1), E.at<double>(2, 2);
+
+			gcransac::Homography model;
+			model.descriptor<<H.at<double>(0, 0), H.at<double>(0, 1), H.at<double>(0, 2),
+				H.at<double>(1, 0), H.at<double>(1, 1), H.at<double>(1, 2),
+				H.at<double>(2, 0), H.at<double>(2, 1), H.at<double>(2, 2);
 			// std::cout<<"desriptor"<<std::endl;
 
 			Score score = scoring_function->getScore(points_, // All points
@@ -947,7 +970,10 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 					tmp_inliers,
 					his_weights_,
 					settings.his_max,
-					settings.his_size, settings.his_use); // The current inlier set
+					settings.his_size, 
+					settings.his_use_polish,
+					settings.scale,
+					settings.avgdiagnol); // The current inlier set
 			// std::cout<<score.value<<score.inlier_number<<std::endl;
 			if (score.value >= best_score.value)
 					{			
@@ -1095,6 +1121,7 @@ template <class _ModelEstimator, class _NeighborhoodGraph, class _ScoringFunctio
 						his_weights_,
 						settings.his_max,
 						settings.his_size, settings.his_use,
+						settings.scale,settings.avgdiagnol,
 						max_score, // The current best model
 						true); // Flag saying that we do not need the inlier set
 

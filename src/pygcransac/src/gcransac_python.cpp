@@ -1867,7 +1867,8 @@ int findEssentialMatrix_(
 	std::vector<double> &destination_intrinsics,
 	std::vector<double>& his_weights,
 	double his_max,
-	int his_size, bool his_use, 
+	int his_size, bool his_use, bool his_use_polish,
+	bool scale, double avgdiagnol,
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
@@ -1875,6 +1876,7 @@ int findEssentialMatrix_(
 	// The inlier-outlier threshold
 	double threshold, 
 	// The RANSAC confidence. Typical values are 0.95, 0.99.
+	double polish_threshold,
 	double conf, 
 	// Maximum iteration number. I do not suggest setting it to lower than 1000.
 	int max_iters, 
@@ -2078,6 +2080,11 @@ int findEssentialMatrix_(
 		gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
 		gcransac.settings.new_local = new_local;
 		gcransac.settings.group_num = group_num;
+		gcransac.settings.polish_threshold = polish_threshold / threshold_normalizer;
+		gcransac.settings.his_use_polish = his_use_polish;
+		gcransac.settings.scale = scale;
+		gcransac.settings.avgdiagnol = avgdiagnol;
+
 
 		// Start GC-RANSAC
 		gcransac.run(points,all_points,//normalized_points,
@@ -2109,6 +2116,10 @@ int findEssentialMatrix_(
 		gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
 		gcransac.settings.new_local = new_local;
 		gcransac.settings.group_num = group_num;
+		gcransac.settings.polish_threshold = polish_threshold / threshold_normalizer;
+		gcransac.settings.his_use_polish = his_use_polish;
+		gcransac.settings.scale = scale;
+		gcransac.settings.avgdiagnol = avgdiagnol;
 		// Start GC-RANSAC
 		gcransac.run(points,all_points,//normalized_points,
 			estimator,
@@ -3660,13 +3671,15 @@ int findHomography_(
 	std::vector<double> &homography, 
 	std::vector<double>& his_weights,
 	double his_max,
-	int his_size, bool his_use, 
+	int his_size, bool his_use, bool his_use_polish,
+	bool scale,double avgdiagnol,
 	// The images' sizes
 	int h1, int w1, int h2, int w2,
 	// The spatial coherence weight used in the local optimization
 	double spatial_coherence_weight, 
 	// The inlier-outlier threshold
 	double threshold, 
+	double polish_threshold, 
 	// The RANSAC confidence. Typical values are 0.95, 0.99.
 	double conf,
 	// Maximum iteration number. I do not suggest setting it to lower than 1000.
@@ -3702,7 +3715,10 @@ int findHomography_(
 	// The variance parameter of the AR-Sampler. It is only used if that particular sampler is selected.
 	double sampler_variance,
 	// The number of RANSAC iterations done in the local optimization
-	int lo_number)
+	int lo_number,
+	bool do_final_iterated_least_squares,
+	bool new_local,
+	int group_num)
 {
 	int num_tents = correspondences.size() / 4;
 	cv::Mat points(num_tents, 4, CV_64F, &correspondences[0]);
@@ -3848,7 +3864,14 @@ int findHomography_(
 			gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
 			gcransac.settings.his_max = his_max;
 			gcransac.settings.his_size = his_size;
-		gcransac.settings.his_use = his_use;
+			gcransac.settings.his_use = his_use;
+			gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
+			gcransac.settings.new_local = new_local;
+			gcransac.settings.group_num = group_num;
+			gcransac.settings.polish_threshold = polish_threshold;
+			gcransac.settings.his_use_polish = his_use_polish;
+			gcransac.settings.scale = scale;
+			gcransac.settings.avgdiagnol = avgdiagnol;
 			// Start GC-RANSAC
 			gcransac.run(points,all_points,
 				estimator,
@@ -3864,7 +3887,6 @@ int findHomography_(
 		} else
 		{
 			inlier_selector::EmptyInlierSelector<utils::DefaultHomographyEstimator, AbstractNeighborhood> inlier_selector(neighborhood_graph.get());
-
 			GCRANSAC<utils::DefaultHomographyEstimator,
 				AbstractNeighborhood,
 				HistogramScoringFunction<utils::DefaultHomographyEstimator>,
@@ -3879,7 +3901,14 @@ int findHomography_(
 			gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
 			gcransac.settings.his_max = his_max;
 			gcransac.settings.his_size = his_size;
-		gcransac.settings.his_use = his_use;
+			gcransac.settings.his_use = his_use;
+			gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
+			gcransac.settings.new_local = new_local;
+			gcransac.settings.group_num = group_num;
+			gcransac.settings.polish_threshold = polish_threshold;
+			gcransac.settings.his_use_polish = his_use_polish;
+			gcransac.settings.scale = scale;
+			gcransac.settings.avgdiagnol = avgdiagnol;
 			// Start GC-RANSAC
 			gcransac.run(points,all_points,
 				estimator,
@@ -3898,7 +3927,7 @@ int findHomography_(
 	{
 		// Initializing an empty preemption
 		preemption::EmptyPreemptiveVerfication<utils::DefaultHomographyEstimator> preemptive_verification;
-
+		// printf("debug 3930");
 		if (use_space_partitioning)
 		{			
 			inlier_selector::SpacePartitioningRANSAC<utils::DefaultHomographyEstimator, AbstractNeighborhood> inlier_selector(neighborhood_graph.get());
@@ -3917,7 +3946,14 @@ int findHomography_(
 			gcransac.settings.neighborhood_sphere_radius = cell_number_in_neighborhood_graph_; // The radius of the neighborhood ball
 			gcransac.settings.his_max = his_max;
 			gcransac.settings.his_size = his_size;
-		gcransac.settings.his_use = his_use;
+			gcransac.settings.his_use = his_use;
+			gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
+			gcransac.settings.new_local = new_local;
+			gcransac.settings.group_num = group_num;
+			gcransac.settings.polish_threshold = polish_threshold;
+			gcransac.settings.his_use_polish = his_use_polish;
+			gcransac.settings.scale = scale;
+			gcransac.settings.avgdiagnol = avgdiagnol;
 			// Start GC-RANSAC
 			gcransac.run(points,all_points,
 				estimator,
@@ -3933,7 +3969,7 @@ int findHomography_(
 		} else
 		{
 			inlier_selector::EmptyInlierSelector<utils::DefaultHomographyEstimator, AbstractNeighborhood> inlier_selector(neighborhood_graph.get());
-
+			printf("debug 3972");
 			GCRANSAC<utils::DefaultHomographyEstimator,
 				AbstractNeighborhood,
 				HistogramScoringFunction<utils::DefaultHomographyEstimator>,
@@ -3949,6 +3985,13 @@ int findHomography_(
 			gcransac.settings.his_max = his_max;
 			gcransac.settings.his_size = his_size;
 		gcransac.settings.his_use = his_use;
+		gcransac.settings.do_final_iterated_least_squares = do_final_iterated_least_squares;
+		gcransac.settings.new_local = new_local;
+		gcransac.settings.group_num = group_num;
+		gcransac.settings.polish_threshold = polish_threshold;
+		gcransac.settings.his_use_polish = his_use_polish;
+		gcransac.settings.scale = scale;
+		gcransac.settings.avgdiagnol = avgdiagnol;
 			// Start GC-RANSAC
 			gcransac.run(points,all_points,
 				estimator,

@@ -47,7 +47,9 @@ namespace gcransac
 				do_graph_cut, // Flag to decide of graph-cut is used in the local optimization
 				use_inlier_limit,
 				his_use,
-				new_local; // Flag to decide if an inlier limit is used in the local optimization to speed up the procedure
+				new_local,
+				his_use_polish,
+				scale; // Flag to decide if an inlier limit is used in the local optimization to speed up the procedure
 
 			double desired_fps; // The desired FPS
 
@@ -63,8 +65,10 @@ namespace gcransac
 			double confidence, // Required confidence in the result
 				neighborhood_sphere_radius, // The radius of the ball used for creating the neighborhood graph
 				threshold, // The inlier-outlier threshold
+				polish_threshold, 
 				spatial_coherence_weight, // The weight of the spatial coherence term
-				his_max;
+				his_max,
+				avgdiagnol;
 			
 			int his_size,
 				group_num;
@@ -86,12 +90,16 @@ namespace gcransac
 				core_number(1),
 				spatial_coherence_weight(0.14),
 				threshold(2.0),
+				polish_threshold(10.0),
 				confidence(0.95),
 				his_max(10.),
 				his_size(200),
 				his_use(false),
+				his_use_polish(false),
 				new_local(false),
-				group_num(10)
+				group_num(10),
+				scale(false),
+				avgdiagnol(2000)
 
 			{
 

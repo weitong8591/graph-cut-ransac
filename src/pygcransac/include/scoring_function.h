@@ -94,6 +94,8 @@ namespace gcransac
 			const double his_max_,
 			const double his_size_,
 			const bool his_use_,
+			const bool scale_=false,
+			const double avgdiagnol_=2000., 
 			const Score &best_score_ = Score(), // The score of the current so-far-the-best model
 			const bool store_inliers_ = true, // A flag to decide if the inliers should be stored
 			const std::vector<const std::vector<size_t>*> *index_sets = nullptr) const = 0; // Index sets to be verified
@@ -380,67 +382,128 @@ namespace gcransac
 			const double his_max_,
 			const double his_size_,
 			const bool his_use_,
+			const bool scale_=false,
+			const double avgdiagnol_=2000., 
 			const Score& best_score_ = Score(), // The score of the current so-far-the-best model
 			const bool store_inliers_ = true, // A flag to decide if the inliers should be stored
 			const std::vector<const std::vector<size_t>*> *index_sets = nullptr) const // Index sets to be verified
 		{
 			Score score;
 			if (his_use_)
-			{
-				//double eps = std::pow(2.0, -52.0);
-				// square the threhsold for inlier selection
-				const double squared_sigma_max_2 = threshold_ * threshold_;
-				// square the threshold for histogram cutting
-				double his_max_2 = his_max_ * his_max_;
-				double residual = 0;
-				const size_t& point_number = points_.rows;
-				double bin_size = static_cast<double>(his_size_) / his_max_2;
-				std::vector<double> histograms(his_size_);
-
-				if (store_inliers_)
+			{	
+				if (scale_)
 				{
-					inliers_.reserve(point_number);
-					inliers_.clear();
+					const double squared_sigma_max_2 = (avgdiagnol_ * threshold_) * (avgdiagnol_ * threshold_);
+					// square the threshold for histogram cutting
+					double his_max_2 = (avgdiagnol_ * his_max_) * (avgdiagnol_ * his_max_);
+					double residual = 0;
+					const size_t& point_number = points_.rows;
+					double bin_size = static_cast<double>(his_size_) / his_max_2;
+					std::vector<double> histograms(his_size_);
+					if (store_inliers_)
+					{
+						inliers_.reserve(point_number);
+						inliers_.clear();
+					}
+
+					for (int point_idx = 0; point_idx < point_number; point_idx += 1)
+					{
+						// Calculate the point-to-model residual
+						residual =
+							 estimator_.residual(points_.row(point_idx),
+								model_.descriptor);
+
+						if (residual > his_max_)
+							continue;
+
+						// Calculate the squared residual
+						const double squared_residual = residual * residual;
+						// std::cout<<"squared_residual"<<squared_residual<<std::endl;
+						// Get the index of the bin
+            			int index = std::max(static_cast<int>(std::ceil(squared_residual * bin_size)) - 1, 0);
+						if (index > his_size_)
+							{
+								index = his_size_;
+							}
+						// std::cout<<"index"<<index<<std::endl;
+						histograms[index]+= 1;
+						if (squared_residual < squared_sigma_max_2)
+							{
+								if (store_inliers_) // Store the point as an inlier if needed.
+									inliers_.emplace_back(point_idx);
+								++(score.inlier_number);
+							}
+
+					}
+
+					for (size_t his_idx = 0; his_idx < his_size_; ++his_idx)
+					{
+						score.value += his_weights_[his_idx] * histograms[his_idx];
+					}
+					score.value /= point_number;
 				}
 
-				for (int point_idx = 0; point_idx < point_number; point_idx += 1)
+				else
 				{
-					// Calculate the point-to-model residual
-					residual =
-						estimator_.residual(points_.row(point_idx),
-							model_.descriptor);
+					
 
-					if (residual > his_max_)
-						continue;
+					const double squared_sigma_max_2 = threshold_ * threshold_;
+					// square the threshold for histogram cutting
+					double his_max_2 = his_max_ * his_max_;
+					double residual = 0;
+					const size_t& point_number = points_.rows;
+					double bin_size = static_cast<double>(his_size_) / his_max_2;
+					std::vector<double> histograms(his_size_);
+					
 
-					// Calculate the squared residual
-					const double squared_residual = residual * residual;
-					// Get the index of the bin
-            		int index = std::max(static_cast<int>(std::ceil(squared_residual * bin_size)) - 1, 0);
-					if (index > his_size_)
-						{
-							index = his_size_;
-						}
-					// std::cout<<"index"<<index<<std::endl;
-					histograms[index]+= 1;
-					if (squared_residual < squared_sigma_max_2)
-						{
-							if (store_inliers_) // Store the point as an inlier if needed.
-								inliers_.emplace_back(point_idx);
-							++(score.inlier_number);
-						}
-	
+					if (store_inliers_)
+					{
+						inliers_.reserve(point_number);
+						inliers_.clear();
+					}
+					
+
+					for (int point_idx = 0; point_idx < point_number; point_idx += 1)
+					{
+						// Calculate the point-to-model residual
+						residual =
+							estimator_.residual(points_.row(point_idx),
+								model_.descriptor);
+
+						if (residual > his_max_)
+							continue;
+
+						// Calculate the squared residual
+						const double squared_residual = residual * residual;
+						// Get the index of the bin
+            			int index = std::max(static_cast<int>(std::ceil(squared_residual * bin_size)) - 1, 0);
+						if (index > his_size_)
+							{
+								index = his_size_;
+							}
+						// std::cout<<"index"<<index<<std::endl;
+						histograms[index]+= 1;
+						if (squared_residual < squared_sigma_max_2)
+							{
+								if (store_inliers_) // Store the point as an inlier if needed.
+									inliers_.emplace_back(point_idx);
+								++(score.inlier_number);
+							}
+
+					}
+
+					for (size_t his_idx = 0; his_idx < his_size_; ++his_idx)
+					{
+						score.value += his_weights_[his_idx] * histograms[his_idx];
+					}
+					score.value /= point_number;
 				}
-
-				for (size_t his_idx = 0; his_idx < his_size_; ++his_idx)
-				{
-					score.value += his_weights_[his_idx] * histograms[his_idx];
-				}
-				score.value /= point_number;//(his_point_number + 1);
+				//(his_point_number + 1);
 				// std::cout<<"score_"<<inliers_.size()<<" "<<score.inlier_number<<std::endl;
 			}
 			else
 			{
+				// std::cout<<"magsac"<<std::endl;
 				constexpr size_t _DimensionNumber = 4;
 				// std::cout<<"use magsac"<<std::endl;
 				double increasedThreshold = threshold_;
